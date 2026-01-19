@@ -92,6 +92,33 @@ View your app in AI Studio: https://ai.studio/apps/drive/134htDa_3SXqpM65lyE57_S
 
 **注意：** Gemini 3 Pro 需要付費 API Key（已啟用帳單）。如果您的 API Key 未啟用帳單，請使用 Gemini 2.5 Flash 模型。
 
+## 🎨 範例作品對比
+
+以下是使用相同關鍵字「萬馬奔騰」生成的範例作品，展示了兩個模型的差異：
+
+### Gemini 2.5 Flash 生成作品
+
+<div align="center">
+  <img src="images/gemini2-5-萬馬奔騰.png" alt="Gemini 2.5 Flash - 萬馬奔騰" width="512" />
+  <p><em>Gemini 2.5 Flash 生成 - 快速生成，品質良好</em></p>
+</div>
+
+### Gemini 3 Pro 生成作品
+
+<div align="center">
+  <img src="images/gemin3-萬馬奔騰.png" alt="Gemini 3 Pro - 萬馬奔騰" width="512" />
+  <p><em>Gemini 3 Pro 生成 - 更高品質，細節豐富</em></p>
+</div>
+
+### 對比總結
+
+從以上範例可以看出：
+
+- **Gemini 2.5 Flash**：生成速度快，適合快速測試和迭代，圖片品質良好
+- **Gemini 3 Pro**：生成時間較長，但圖片品質明顯提升，細節更豐富，更適合最終作品和打印用途
+
+**建議：** 如果您追求高品質的藝術作品，強烈推薦使用 Gemini 3 Pro 模型。
+
 ## 📖 使用說明
 
 1. **輸入關鍵字**：在輸入框中輸入您的願望或祝福語（例如：財富、健康、愛情等）
