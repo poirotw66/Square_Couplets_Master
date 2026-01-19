@@ -53,3 +53,18 @@ export interface GenerationResultData {
   blessingPhrase: string;
   imageUrl: string;
 }
+
+// Gemini API Types
+export interface GeminiContentPart {
+  text?: string;
+  inlineData?: {
+    mimeType: string;
+    data: string;
+  };
+}
+
+// Error Types
+export type ApiErrorInput = 
+  | { status?: number; message?: string; code?: string }
+  | Error
+  | unknown;

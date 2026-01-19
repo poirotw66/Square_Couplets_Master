@@ -9,24 +9,43 @@ import {
 import { processImageDataUrl } from "../utils/imageUtils";
 import { handleApiError } from "../utils/errorHandler";
 import { retryWithBackoff } from "../utils/retry";
-import type { GeminiResponse, ApiError } from "../types";
+import type { GeminiContentPart } from "../types";
 
 const getClient = (apiKey?: string) => {
   // Use user-provided key if available, otherwise fallback to env var
-  const key = apiKey?.trim() || process.env.API_KEY;
+  const userKey = apiKey?.trim();
+  const envKey = process.env.API_KEY?.trim();
+  const key = userKey || envKey;
+  
   if (!key) {
     throw new Error("API Key is missing. Please click the Settings icon to configure your Gemini API Key.");
   }
+  
+  // Basic validation: API keys should be non-empty strings
+  if (typeof key !== 'string' || key.length === 0) {
+    throw new Error("Invalid API Key format. Please check your API Key configuration.");
+  }
+  
   return new GoogleGenAI({ apiKey: key });
 };
 
-export const generateDoufangPrompt = async (userKeyword: string, apiKey?: string, referenceImageDataUrl?: string | null): Promise<{ blessingPhrase: string; imagePrompt: string }> => {
+export const generateDoufangPrompt = async (
+  userKeyword: string, 
+  apiKey?: string, 
+  referenceImageDataUrl?: string | null,
+  signal?: AbortSignal
+): Promise<{ blessingPhrase: string; imagePrompt: string }> => {
   return retryWithBackoff(async () => {
     const ai = getClient(apiKey);
     
     try {
-    // Prepare content parts
-    const parts: any[] = [];
+      // Check if request was cancelled
+      if (signal?.aborted) {
+        throw new Error('Request cancelled');
+      }
+
+      // Prepare content parts
+      const parts: GeminiContentPart[] = [];
     
     // Add reference image if provided - image should come first
     if (referenceImageDataUrl) {
@@ -87,38 +106,58 @@ export const generateDoufangPrompt = async (userKeyword: string, apiKey?: string
       throw new Error("No response from Gemini");
     }
 
+      // Check if request was cancelled before parsing
+      if (signal?.aborted) {
+        throw new Error('Request cancelled');
+      }
+
       return JSON.parse(text);
     } catch (e: unknown) {
+      if (signal?.aborted) {
+        throw new Error('Request cancelled');
+      }
       throw handleApiError(e, 'generateDoufangPrompt');
     }
   });
 };
 
-export const generateDoufangImage = async (prompt: string, apiKey?: string, model: string = 'gemini-2.5-flash-image', imageSize: '1K' | '2K' | '4K' = '1K', referenceImageDataUrl?: string | null): Promise<string> => {
+export const generateDoufangImage = async (
+  prompt: string, 
+  apiKey?: string, 
+  model: string = 'gemini-2.5-flash-image', 
+  imageSize: '1K' | '2K' | '4K' = '1K', 
+  referenceImageDataUrl?: string | null,
+  signal?: AbortSignal
+): Promise<string> => {
   return retryWithBackoff(async () => {
     const ai = getClient(apiKey);
 
+    // Check if request was cancelled
+    if (signal?.aborted) {
+      throw new Error('Request cancelled');
+    }
+
     let config: Record<string, unknown> = {};
   
-  // Different models have different support for imageConfig
-  // Flash model does NOT support imageConfig parameter - it will cause 400 errors
-  // Only Pro model supports imageConfig with custom sizes
-  if (model === 'gemini-3-pro-image-preview') {
-    // Pro model supports all sizes (1K, 2K, 4K)
-    config = {
-      imageConfig: {
-        aspectRatio: "1:1",
-        imageSize: imageSize
-      }
-    };
-  }
-  // For Flash model: Do NOT set imageConfig at all
-  // Flash model only supports default 1K (1024x1024) resolution
-  // Setting imageConfig will cause 400 INVALID_ARGUMENT error
+    // Different models have different support for imageConfig
+    // Flash model does NOT support imageConfig parameter - it will cause 400 errors
+    // Only Pro model supports imageConfig with custom sizes
+    if (model === 'gemini-3-pro-image-preview') {
+      // Pro model supports all sizes (1K, 2K, 4K)
+      config = {
+        imageConfig: {
+          aspectRatio: "1:1",
+          imageSize: imageSize
+        }
+      };
+    }
+    // For Flash model: Do NOT set imageConfig at all
+    // Flash model only supports default 1K (1024x1024) resolution
+    // Setting imageConfig will cause 400 INVALID_ARGUMENT error
 
-  try {
-    // Prepare content parts
-    const parts: any[] = [];
+    try {
+      // Prepare content parts
+      const parts: GeminiContentPart[] = [];
     
     // Add reference image if provided - image should come first
     // Note: The prompt already contains style guidance from the reference image
@@ -162,15 +201,24 @@ export const generateDoufangImage = async (prompt: string, apiKey?: string, mode
       config: Object.keys(config).length > 0 ? config : undefined
     });
 
-    // Extract image
-    for (const part of response.candidates?.[0]?.content?.parts || []) {
-      if (part.inlineData) {
-        return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+      // Check if request was cancelled before processing response
+      if (signal?.aborted) {
+        throw new Error('Request cancelled');
       }
-    }
+
+      // Extract image
+      for (const part of response.candidates?.[0]?.content?.parts || []) {
+        if (part.inlineData) {
+          return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+        }
+      }
 
       throw new Error("No image generated in the response.");
     } catch (e: unknown) {
+      if (signal?.aborted) {
+        throw new Error('Request cancelled');
+      }
+      
       const error = handleApiError(e, 'generateDoufangImage');
       
       // Add specific context for image size errors

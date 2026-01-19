@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { Header } from './components/Header';
 import { PromptDisplay } from './components/PromptDisplay';
 import { ImageResult } from './components/ImageResult';
@@ -8,6 +8,7 @@ import { GenerationStatus, type GenerationResultData, type AppSettings } from '.
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { compressImage, validateImageFile } from './utils/imageUtils';
 import { AppError, getUserFriendlyErrorMessage } from './utils/errorHandler';
+import { IMAGE_CONSTANTS } from './constants';
 
 const App: React.FC = () => {
   const [keyword, setKeyword] = useState('');
@@ -52,9 +53,32 @@ const App: React.FC = () => {
     setSettings(prev => ({ ...prev, imageSize: size }));
   }, [setSettings]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // AbortController ref for cancelling API calls
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!keyword.trim()) return;
+    
+    // Validate keyword length and format
+    const trimmedKeyword = keyword.trim();
+    if (trimmedKeyword.length === 0) {
+      setError('請輸入關鍵字');
+      return;
+    }
+    if (trimmedKeyword.length > 50) {
+      setError('關鍵字過長，請輸入不超過 50 個字符');
+      return;
+    }
+
+    // Cancel any ongoing requests
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Create new AbortController for this request
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+    const signal = abortController.signal;
 
     setStatus(GenerationStatus.PROCESSING_PROMPT);
     setError(null);
@@ -62,7 +86,10 @@ const App: React.FC = () => {
 
     try {
       // Step 1: Generate Prompt (with reference image if provided)
-      const promptData = await generateDoufangPrompt(keyword, apiKey, referenceImage);
+      const promptData = await generateDoufangPrompt(trimmedKeyword, apiKey, referenceImage, signal);
+      
+      // Check if request was cancelled
+      if (signal.aborted) return;
       
       setResult({
         prompt: promptData.imagePrompt,
@@ -78,39 +105,62 @@ const App: React.FC = () => {
         apiKey, 
         imageModel, 
         imageSize,
-        referenceImage
+        referenceImage,
+        signal
       );
+      
+      // Check if request was cancelled
+      if (signal.aborted) return;
       
       setResult(prev => prev ? { ...prev, imageUrl: imageBase64 } : null);
       setStatus(GenerationStatus.COMPLETED);
 
     } catch (err: unknown) {
+      // Ignore cancellation errors
+      if (signal.aborted) return;
+      
       console.error(err);
       if (err instanceof AppError) {
         setError(getUserFriendlyErrorMessage(err));
       } else if (err instanceof Error) {
+        // Ignore cancellation error messages
+        if (err.message === 'Request cancelled') return;
         setError(err.message || "發生未知錯誤");
       } else {
         setError("發生未知錯誤");
       }
       setStatus(GenerationStatus.ERROR);
+    } finally {
+      // Clear abort controller if this was the current request
+      if (abortControllerRef.current === abortController) {
+        abortControllerRef.current = null;
+      }
     }
-  };
+  }, [keyword, apiKey, imageModel, imageSize, referenceImage]);
 
-  const handleSwitchToFlash = () => {
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
+  const handleSwitchToFlash = useCallback(() => {
     setImageModel('gemini-2.5-flash-image');
     setError(null);
     setStatus(GenerationStatus.IDLE);
     // Optionally auto-retry, but better to let user click generate again
     setIsSettingsOpen(true); // Open settings to show the change
-  };
+  }, [setImageModel, setIsSettingsOpen]);
 
   const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     // Validate file
-    const validationError = validateImageFile(file, 10);
+    const validationError = validateImageFile(file, IMAGE_CONSTANTS.MAX_FILE_SIZE_MB);
     if (validationError) {
       setError(validationError);
       return;
@@ -119,7 +169,7 @@ const App: React.FC = () => {
     try {
       setReferenceImageFile(file);
       // Compress image before storing
-      const compressedDataUrl = await compressImage(file, 500, 1920);
+      const compressedDataUrl = await compressImage(file);
       setReferenceImage(compressedDataUrl);
       setError(null);
     } catch (err) {

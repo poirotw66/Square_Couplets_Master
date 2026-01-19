@@ -1,3 +1,12 @@
+// Image Processing Constants
+export const IMAGE_CONSTANTS = {
+  MAX_SIZE_KB: 500,
+  MAX_DIMENSION: 1920,
+  MAX_FILE_SIZE_MB: 10,
+  COMPRESSION_QUALITY: 0.85,
+  MIN_COMPRESSION_QUALITY: 0.1
+} as const;
+
 // Base system prompt for generating Doufang prompts
 export const DOUFANG_SYSTEM_PROMPT = `
 You are a professional Chinese New Year couplet and calligraphy art designer.
@@ -36,9 +45,9 @@ Color theme: deep Chinese red, gold, black ink, warm highlights.
 Lighting: soft studio lighting, gentle glow on gold details, museum-quality artwork.
 
 Composition: 
-The diamond-shaped Doufang is fully visible and centered, with generous blank margins around all four corners.
-The entire artwork is fully inside the frame, not touching any edge, not cropped, not cut off.
-Clear safe area padding around the diamond shape for printing.
+The diamond-shaped Doufang fills the majority of the 1:1 frame, centered with minimal elegant margins (approximately 2-5% of frame width, just enough to prevent edge cropping).
+The entire artwork is fully visible inside the frame, not touching any edge, not cropped, not cut off.
+The Doufang should occupy 85-95% of the image area, maximizing visual impact.
 Clean background, symmetrical, perfectly framed, suitable for printing and hanging on wall.
 
 Quality: ultra high detail, 8k, masterpiece, professional artwork, 1:1 aspect ratio.
@@ -46,7 +55,7 @@ Quality: ultra high detail, 8k, masterpiece, professional artwork, 1:1 aspect ra
 Framing requirements:
 - The entire diamond-shaped Doufang must be fully visible inside the image.
 - No part of the artwork is cut off, cropped, out of frame, or touching the image borders.
-- Wide safe margins around the artwork.
+- Minimal margins - the Doufang should fill most of the frame (85-95% of image area).
 
 Text requirements:
 - The Chinese characters must be clear, correct, readable.
@@ -136,7 +145,8 @@ Your generated "imagePrompt" must follow this logic:
 ### FINAL OUTPUT CONSTRAINTS:
 1. **Framing**:
    - The entire diamond Doufang must be fully contained within the 1:1 frame.
-   - Wide safe margins around the artwork.
+   - Minimal, elegant margins - just enough to prevent edge cropping (approximately 2-5% of frame width).
+   - The Doufang should fill most of the frame (85-95% of the image area).
    - No cropping, no touching edges, no cut-off.
 2. **Text Quality**:
    - Calligraphy must be clear, professional, and correctly written.
@@ -146,23 +156,23 @@ Your generated "imagePrompt" must follow this logic:
 
 ---
 
-### COMPOSITION RULE:
-The diamond-shaped Doufang is fully visible and centered, with generous blank margins around all four corners.
-The entire artwork is fully inside the frame, not touching any edge.
-Clear safe area padding around the diamond shape for printing.
-Clean background, symmetrical, perfectly framed, suitable for printing and hanging.
+Composition: 
+The diamond-shaped Doufang fills the majority of the 1:1 frame, centered with minimal elegant margins (just enough to prevent edge cropping, approximately 2-5% of frame width).
+The entire artwork is fully visible inside the frame, not touching any edge, not cropped, not cut off.
+The Doufang should occupy 85-95% of the image area, maximizing visual impact.
+Clean background, symmetrical, perfectly framed, suitable for printing and hanging on wall.
 
----
+Quality: ultra high detail, 8k, masterpiece, professional artwork, 1:1 aspect ratio.
 
-### QUALITY:
-Ultra high detail, 8k, masterpiece, museum-quality artwork, professional composition, 1:1 aspect ratio.
+Framing requirements:
+- The entire diamond-shaped Doufang must be fully visible inside the image.
+- No part of the artwork is cut off, cropped, out of frame, or touching the image borders.
+- Minimal margins - the Doufang should fill most of the frame (85-95% of image area).
 
----
-
-### TEXT REQUIREMENTS:
+Text requirements:
 - The Chinese characters must be clear, correct, readable.
-- No deformed text, no wrong characters.
-- No western typography, must look like real Chinese calligraphy.
+- No typo, no deformed text.
+- No modern elements, no western style, no watermark.
 
 ---
 
@@ -223,6 +233,8 @@ export const getSimpleUserInputPrompt = (userKeyword: string): string => {
 // Image generation prompt enhancement when reference image is provided
 export const getImageGenerationPromptWithReference = (basePrompt: string): string => {
   return `${basePrompt}
+
+IMPORTANT COMPOSITION NOTE: The diamond-shaped Doufang should fill 85-95% of the frame with minimal margins (2-5% of frame width). Avoid excessive white space or wide margins. Maximize the visual impact by making the Doufang artwork occupy most of the image area.
 
 Note: The reference image provided above should be used as a visual style guide. Follow the style, color palette, and artistic approach described in the prompt, which was generated based on analysis of this reference image.`;
 };

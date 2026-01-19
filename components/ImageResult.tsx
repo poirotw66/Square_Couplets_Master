@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useState, useEffect } from 'react';
 
 interface ImageResultProps {
   imageUrl: string;
@@ -6,6 +6,13 @@ interface ImageResultProps {
 }
 
 export const ImageResult: React.FC<ImageResultProps> = memo(({ imageUrl, isLoading }) => {
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    // Reset error state when imageUrl changes
+    setImageError(false);
+  }, [imageUrl]);
+
   if (isLoading) {
     return (
       <div 
@@ -54,12 +61,23 @@ export const ImageResult: React.FC<ImageResultProps> = memo(({ imageUrl, isLoadi
            
            {/* Inner Shadow / Emboss for the cut-out */}
            <div className="relative w-full aspect-square overflow-hidden shadow-[inset_0_2px_8px_rgba(0,0,0,0.2)] bg-gray-100">
-                 <img 
-                   src={imageUrl} 
-                   alt="Generated Doufang artwork" 
-                   className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-                   loading="lazy"
-                 />
+                 {imageError ? (
+                   <div className="w-full h-full flex flex-col items-center justify-center bg-red-50 text-red-800 p-4">
+                     <svg className="w-12 h-12 mb-2 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                     </svg>
+                     <p className="text-sm font-medium text-center">圖片載入失敗</p>
+                     <p className="text-xs text-red-600 mt-1 text-center">請重新生成圖片</p>
+                   </div>
+                 ) : (
+                   <img 
+                     src={imageUrl} 
+                     alt="Generated Doufang artwork" 
+                     className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                     loading="lazy"
+                     onError={() => setImageError(true)}
+                   />
+                 )}
                  {/* Paper Texture Overlay */}
                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/paper-fibers.png')] opacity-20 pointer-events-none mix-blend-multiply"></div>
                  

@@ -1,3 +1,5 @@
+import { IMAGE_CONSTANTS } from "../constants";
+
 /**
  * Process image data URL and extract mime type and base64 data
  * @param dataUrl - The data URL string
@@ -23,8 +25,8 @@ export const processImageDataUrl = (dataUrl: string): { mimeType: string; base64
  */
 export const compressImage = async (
   file: File, 
-  maxSizeKB: number = 500,
-  maxDimension: number = 1920
+  maxSizeKB: number = IMAGE_CONSTANTS.MAX_SIZE_KB,
+  maxDimension: number = IMAGE_CONSTANTS.MAX_DIMENSION
 ): Promise<string> => {
   return new Promise((resolve, reject) => {
     // Validate file type
@@ -80,7 +82,10 @@ export const compressImage = async (
               reader.readAsDataURL(blob);
             } else {
               // Still too large, try lower quality
-              const quality = Math.max(0.1, 0.85 * (maxSizeKB / sizeKB));
+              const quality = Math.max(
+                IMAGE_CONSTANTS.MIN_COMPRESSION_QUALITY, 
+                IMAGE_CONSTANTS.COMPRESSION_QUALITY * (maxSizeKB / sizeKB)
+              );
               canvas.toBlob(
                 (compressedBlob) => {
                   if (!compressedBlob) {
@@ -98,7 +103,7 @@ export const compressImage = async (
             }
           },
           'image/jpeg',
-          0.85 // Initial quality
+          IMAGE_CONSTANTS.COMPRESSION_QUALITY // Initial quality
         );
       };
       img.onerror = () => reject(new Error('Failed to load image'));
@@ -115,7 +120,7 @@ export const compressImage = async (
  * @param maxSizeMB - Maximum file size in MB (default: 10MB)
  * @returns Error message if invalid, null if valid
  */
-export const validateImageFile = (file: File, maxSizeMB: number = 10): string | null => {
+export const validateImageFile = (file: File, maxSizeMB: number = IMAGE_CONSTANTS.MAX_FILE_SIZE_MB): string | null => {
   // Validate file type
   if (!file.type.startsWith('image/')) {
     return 'Please upload an image file (JPG, PNG, etc.)';
