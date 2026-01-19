@@ -2,8 +2,6 @@
 
 一個使用 Google Gemini AI 生成傳統春聯斗方藝術作品的應用程式。將您的願望轉化為精美的書法藝術作品。
 
-View your app in AI Studio: https://ai.studio/apps/drive/134htDa_3SXqpM65lyE57_S7pY5DiemK4
-
 ## ✨ 功能特色
 
 - 🎨 **AI 生成春聯斗方**：輸入關鍵字，自動生成傳統風格的春聯藝術作品
@@ -133,6 +131,130 @@ View your app in AI Studio: https://ai.studio/apps/drive/134htDa_3SXqpM65lyE57_S
 - **樣式**：Tailwind CSS
 - **AI 模型**：Google Gemini 2.5 Flash / Gemini 3 Pro
 - **構建工具**：Vite
+
+## 📦 NPM 安裝
+
+本專案的 Claude Agent Skills 已發布到 npm，可以通過以下方式安裝：
+
+### 全域安裝（推薦）
+
+```bash
+npm install -g @justin_666/square-couplets-master-skills
+```
+
+安裝後，您可以在任何地方使用 `doufang-skills` 命令：
+
+```bash
+# 列出所有可用的 skills
+doufang-skills list
+
+# 查看特定 skill 的內容
+doufang-skills show generate-doufang-prompt
+
+# 獲取 skill 文件路徑（用於程序化訪問）
+doufang-skills path generate-doufang-image
+
+# 查看幫助
+doufang-skills help
+```
+
+### 本地安裝
+
+```bash
+npm install @justin_666/square-couplets-master-skills
+```
+
+然後在您的專案中使用：
+
+```javascript
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
+// 獲取 skill 文件路徑
+const skillPath = join(require.resolve('@justin_666/square-couplets-master-skills'), '../skills/generate-doufang-prompt/SKILL.md');
+const skillContent = readFileSync(skillPath, 'utf-8');
+```
+<｜tool▁calls▁begin｜><｜tool▁call▁begin｜>
+run_terminal_cmd
+
+
+## 🤖 Claude Agent Skills
+
+本專案包含三個 Claude Agent Skills，可在支援該協定的 AI IDE（如 Cursor）中使用：
+
+### 📝 generate-doufang-prompt
+**功能**：根據關鍵字生成專業的春聯斗方藝術作品提示詞
+
+**使用場景**：
+- 用戶提供關鍵字或願望短語
+- 需要生成傳統中國新年藝術作品提示詞
+- 需要將關鍵字轉換為四字祝福語
+
+**示例**：
+```
+"幫我生成一個關於財富的春聯斗方 prompt"
+"為健康長壽主題創建一個 Doufang prompt"
+```
+
+### 🎨 generate-doufang-image
+**功能**：使用 Google Gemini API 生成實際的春聯斗方藝術作品圖片
+
+**使用場景**：
+- 用戶已有提示詞，想要生成實際圖片
+- 需要測試不同模型或解析度
+- 需要生成帶參考圖片風格的藝術作品
+
+**支持的模型**：
+- Gemini 2.5 Flash：快速生成，1K 解析度
+- Gemini 3 Pro：高品質，支持 1K/2K/4K 解析度
+
+**示例**：
+```
+"用 Gemini 3 Pro 生成 2K 解析度的圖片"
+"使用這個 prompt 生成圖片，參考圖片風格"
+```
+
+### ✨ optimize-doufang-prompt
+**功能**：優化 Doufang 提示詞，減少過多留白，改善構圖
+
+**使用場景**：
+- 生成的圖片留白過多
+- 需要改善提示詞品質
+- 生成的圖片構圖不佳
+- 需要更緊湊的構圖
+
+**優化重點**：
+- 將「寬留白」改為「最小留白（2-5%）」
+- 確保 Doufang 佔據 85-95% 的畫面空間
+- 強調視覺衝擊力而非安全邊距
+
+**示例**：
+```
+"優化這個 prompt，減少留白"
+"改善構圖，讓 Doufang 佔據更多畫面"
+```
+
+### 📂 Skills 文件結構
+
+```
+skills/
+├── generate-doufang-prompt/
+│   └── SKILL.md
+├── generate-doufang-image/
+│   └── SKILL.md
+└── optimize-doufang-prompt/
+    └── SKILL.md
+```
+
+### 🚀 如何使用
+
+在 Cursor 或其他支援 Claude Agent Skills 的 IDE 中：
+
+1. **自動載入**：當您提到相關任務時，對應的 skill 會自動載入
+2. **手動調用**：直接使用 skill 名稱來調用特定功能
+3. **組合使用**：可以將多個 skills 組合使用，例如先生成 prompt，再優化，最後生成圖片
+
+**注意**：使用 `generate-doufang-image` skill 時，需要配置 Gemini API Key。
 
 ## 📝 授權 (License)
 

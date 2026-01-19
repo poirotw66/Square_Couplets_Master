@@ -1,22 +1,71 @@
 {
-  "name": "春聯斗方大師",
-  "private": true,
-  "version": "0.0.0",
+  "name": "@justin_666/square-couplets-master-skills",
+  "version": "1.0.1",
+  "description": "Claude Agent Skills for generating Chinese New Year Doufang (diamond-shaped couplet) artwork using Google Gemini AI",
   "type": "module",
+  "main": "bin/doufang-skills.js",
+  "bin": {
+    "doufang-skills": "bin/doufang-skills.js"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prepublishOnly": "node -e \"require('fs').chmodSync('bin/doufang-skills.js', 0o755)\""
   },
-  "dependencies": {
-    "@google/genai": "^1.37.0",
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3"
+  "keywords": [
+    "claude",
+    "agent",
+    "skills",
+    "chinese",
+    "calligraphy",
+    "gemini",
+    "ai",
+    "art",
+    "doufang",
+    "chinese-new-year",
+    "couplet",
+    "traditional",
+    "artwork"
+  ],
+  "author": "Justin",
+  "license": "CC-BY-NC-SA-4.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/poirotw66/Square_Couplets_Master.git"
   },
+  "bugs": {
+    "url": "https://github.com/poirotw66/Square_Couplets_Master/issues"
+  },
+  "homepage": "https://github.com/poirotw66/Square_Couplets_Master#readme",
+  "files": [
+    "bin/",
+    "skills/",
+    "README.md",
+    "LICENSE",
+    "package.json"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {},
   "devDependencies": {
+    "@google/genai": "^1.37.0",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "dotenv": "^17.2.3",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "tsx": "^4.21.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
+  },
+  "overrides": {
+    "axios": ">=1.11.0",
+    "qs": ">=6.14.1",
+    "body-parser": ">=2.2.0"
   }
 }

@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
+output
 
 # Environment variables
 .env
@@ -19,6 +20,9 @@ dist-ssr
 .env.development.local
 .env.test.local
 .env.production.local
+
+# NPM config (may contain tokens)
+.npmrc
 
 # Editor directories and files
 .vscode/*

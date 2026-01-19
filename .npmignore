@@ -1,0 +1,61 @@
+# Development files
+node_modules/
+.vite/
+dist/
+build/
+*.log
+*.local
+
+# Source files (not needed for published package)
+src/
+components/
+hooks/
+services/
+utils/
+App.tsx
+index.tsx
+index.html
+vite.config.ts
+tsconfig.json
+
+# Development configs
+.env
+.env.local
+.env.*.local
+.gitignore
+.github/
+
+# Example files
+examples/
+output/
+
+# Images (too large for npm)
+images/
+*.png
+*.jpg
+*.jpeg
+*.gif
+
+# Documentation (keep README.md and LICENSE)
+# README.md is kept for npm
+# LICENSE is kept for npm
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# Build artifacts
+*.map
