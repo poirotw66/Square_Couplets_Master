@@ -54,8 +54,8 @@ export const Header: React.FC<HeaderProps> = memo(({ onOpenSettings }) => {
         <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-[0_0_8px_rgba(251,191,36,0.8)]"></div>
       </div>
       
-      <h1 className="text-6xl md:text-8xl font-calligraphy text-transparent bg-clip-text bg-gradient-to-b from-amber-200 via-amber-400 to-amber-600 drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)] mb-4 animate-float relative">
-        <span className="relative z-10">春聯斗方大師</span>
+      <h1 className="text-6xl md:text-8xl font-calligraphy mb-4 animate-float relative">
+        <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-b from-amber-200 via-amber-400 to-amber-600 drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)]">春聯斗方大師</span>
         {/* Text Glow Effect */}
         <span className="absolute inset-0 text-6xl md:text-8xl font-calligraphy text-amber-500/30 blur-xl -z-10">春聯斗方大師</span>
       </h1>
