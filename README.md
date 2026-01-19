@@ -1,7 +1,3 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
-
 # 春聯斗方大師 (Square Couplets Master)
 
 一個使用 Google Gemini AI 生成傳統春聯斗方藝術作品的應用程式。將您的願望轉化為精美的書法藝術作品。
@@ -39,6 +35,39 @@ View your app in AI Studio: https://ai.studio/apps/drive/134htDa_3SXqpM65lyE57_S
 
 4. **打開瀏覽器：**
    - 訪問 `http://localhost:5173`（或終端顯示的地址）
+
+## 🌐 部署到 GitHub Pages
+
+本專案已配置自動部署到 GitHub Pages。當您推送代碼到 `main` 或 `master` 分支時，GitHub Actions 會自動構建並部署應用程式。
+
+### 部署步驟
+
+1. **啟用 GitHub Pages：**
+   - 前往 GitHub 倉庫的 Settings
+   - 點擊左側的 "Pages"
+   - 在 "Source" 部分選擇 "GitHub Actions"
+
+2. **推送代碼：**
+   ```bash
+   git add .
+   git commit -m "Deploy to GitHub Pages"
+   git push origin main
+   ```
+
+3. **查看部署狀態：**
+   - 前往倉庫的 "Actions" 標籤頁
+   - 查看部署工作流程的執行狀態
+
+4. **訪問部署的應用：**
+   - 部署完成後，應用將在以下地址可用：
+   - `https://[您的用戶名].github.io/Square_Couplets_Master/`
+
+### 手動觸發部署
+
+如果需要手動觸發部署，可以：
+- 前往 "Actions" 標籤頁
+- 選擇 "Deploy to GitHub Pages" 工作流程
+- 點擊 "Run workflow" 按鈕
 
 ## 💡 使用建議
 
