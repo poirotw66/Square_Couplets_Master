@@ -21,6 +21,10 @@ const App: React.FC = () => {
   const [apiKey, setApiKey] = useState('');
   const [imageModel, setImageModel] = useState('gemini-2.5-flash-image');
   const [imageSize, setImageSize] = useState<'1K' | '2K' | '4K'>('1K');
+  
+  // Reference Image State
+  const [referenceImage, setReferenceImage] = useState<string | null>(null);
+  const [referenceImageFile, setReferenceImageFile] = useState<File | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,8 +35,8 @@ const App: React.FC = () => {
     setResult(null);
 
     try {
-      // Step 1: Generate Prompt
-      const promptData = await generateDoufangPrompt(keyword, apiKey);
+      // Step 1: Generate Prompt (with reference image if provided)
+      const promptData = await generateDoufangPrompt(keyword, apiKey, referenceImage);
       
       setResult({
         prompt: promptData.imagePrompt,
@@ -43,7 +47,13 @@ const App: React.FC = () => {
       setStatus(GenerationStatus.PROCESSING_IMAGE);
 
       // Step 2: Generate Image
-      const imageBase64 = await generateDoufangImage(promptData.imagePrompt, apiKey, imageModel, imageSize);
+      const imageBase64 = await generateDoufangImage(
+        promptData.imagePrompt, 
+        apiKey, 
+        imageModel, 
+        imageSize,
+        referenceImage
+      );
       
       setResult(prev => prev ? { ...prev, imageUrl: imageBase64 } : null);
       setStatus(GenerationStatus.COMPLETED);
@@ -61,6 +71,37 @@ const App: React.FC = () => {
     setStatus(GenerationStatus.IDLE);
     // Optionally auto-retry, but better to let user click generate again
     setIsSettingsOpen(true); // Open settings to show the change
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please upload an image file (JPG, PNG, etc.)');
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      setError('Image file is too large. Maximum size is 10MB.');
+      return;
+    }
+
+    setReferenceImageFile(file);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result as string;
+      setReferenceImage(result);
+      setError(null);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveReferenceImage = () => {
+    setReferenceImage(null);
+    setReferenceImageFile(null);
   };
 
   return (
@@ -137,6 +178,61 @@ const App: React.FC = () => {
              </div>
           </form>
           
+          {/* Reference Image Upload Section */}
+          <div className="mt-6 relative">
+            {!referenceImage ? (
+              <label className="group relative flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-amber-500/30 rounded-xl bg-red-950/20 hover:bg-red-900/30 hover:border-amber-500/50 transition-all duration-300 cursor-pointer">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  disabled={status === GenerationStatus.PROCESSING_PROMPT || status === GenerationStatus.PROCESSING_IMAGE}
+                />
+                <div className="flex flex-col items-center gap-2">
+                  <svg className="w-8 h-8 text-amber-500/60 group-hover:text-amber-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                  <span className="text-xs text-amber-500/60 group-hover:text-amber-400 transition-colors font-serif">
+                    Upload Reference Image (Optional)
+                  </span>
+                  <span className="text-xs text-amber-500/40 group-hover:text-amber-500/50 transition-colors">
+                    The model will use this as a style reference
+                  </span>
+                </div>
+              </label>
+            ) : (
+              <div className="relative group">
+                <div className="relative w-full h-48 rounded-xl overflow-hidden border-2 border-amber-500/30 bg-red-950/20">
+                  <img 
+                    src={referenceImage} 
+                    alt="Reference" 
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveReferenceImage}
+                    className="absolute top-2 right-2 p-2 bg-red-950/80 hover:bg-red-900/90 border border-amber-500/30 rounded-full text-amber-400 hover:text-amber-200 transition-all shadow-lg"
+                    disabled={status === GenerationStatus.PROCESSING_PROMPT || status === GenerationStatus.PROCESSING_IMAGE}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                  </button>
+                  <div className="absolute bottom-2 left-2 right-2">
+                    <div className="flex items-center gap-2 text-xs text-amber-200/80 bg-black/40 px-2 py-1 rounded backdrop-blur-sm">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd"></path>
+                      </svg>
+                      <span>Reference image will be used for style guidance</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Suggestions */}
           <div className="flex gap-3 mt-8 justify-center flex-wrap">
             {['Wealth & Prosperity', 'Career Success', 'Love & Harmony', 'Health & Longevity', 'Academic Wisdom'].map((suggestion, index) => (
