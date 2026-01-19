@@ -14,6 +14,8 @@ interface SettingsModalProps {
   setApiKey: (key: string) => void;
   imageModel: string;
   setImageModel: (model: string) => void;
+  imageSize: '1K' | '2K' | '4K';
+  setImageSize: (size: '1K' | '2K' | '4K') => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -22,7 +24,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   apiKey,
   setApiKey,
   imageModel,
-  setImageModel
+  setImageModel,
+  imageSize,
+  setImageSize
 }) => {
   const [showKey, setShowKey] = useState(false);
   const [hasAIStudio, setHasAIStudio] = useState(false);
@@ -145,7 +149,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   name="model" 
                   value="gemini-2.5-flash-image"
                   checked={imageModel === 'gemini-2.5-flash-image'}
-                  onChange={(e) => setImageModel(e.target.value)}
+                  onChange={(e) => {
+                    setImageModel(e.target.value);
+                    // Flash model may only support 1K, auto-reset to 1K
+                    if (imageSize !== '1K') {
+                      setImageSize('1K');
+                    }
+                  }}
                   className="sr-only"
                 />
                 <div className="flex flex-col h-full">
@@ -186,6 +196,61 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </label>
 
             </div>
+          </div>
+
+          {/* Image Size Selection Section */}
+          <div>
+            <label className="block text-amber-200/80 text-sm font-bold tracking-wider uppercase mb-3">
+              Image Output Size
+            </label>
+            <div className="grid grid-cols-3 gap-3">
+              {(['1K', '2K', '4K'] as const).map((size) => {
+                // Flash model may only support 1K, show warning for higher resolutions
+                const isFlashModel = imageModel === 'gemini-2.5-flash-image';
+                const isUnsupported = isFlashModel && size !== '1K';
+                
+                return (
+                  <label
+                    key={size}
+                    className={`
+                      relative cursor-pointer border rounded-xl p-4 transition-all duration-300 text-center
+                      ${imageSize === size
+                        ? 'bg-amber-900/40 border-amber-500/60 shadow-[0_0_15px_rgba(245,158,11,0.2)]' 
+                        : 'bg-black/20 border-amber-900/30 hover:bg-amber-900/20'}
+                      ${isUnsupported ? 'opacity-60' : ''}
+                    `}
+                    title={isUnsupported ? 'Flash model may only support 1K. Use Pro model for higher resolutions.' : ''}
+                  >
+                    <input
+                      type="radio"
+                      name="imageSize"
+                      value={size}
+                      checked={imageSize === size}
+                      onChange={(e) => setImageSize(e.target.value as '1K' | '2K' | '4K')}
+                      className="sr-only"
+                      disabled={isUnsupported}
+                    />
+                    <div className="flex flex-col items-center">
+                      <span className="font-bold text-amber-200 text-lg mb-1">{size}</span>
+                      <span className="text-xs text-amber-500/60">
+                        {size === '1K' ? '1024×1024' : size === '2K' ? '2048×2048' : '4096×4096'}
+                      </span>
+                      {isUnsupported && (
+                        <span className="text-xs text-red-400/60 mt-1">Pro only</span>
+                      )}
+                      {imageSize === size && (
+                        <div className="absolute top-2 right-2 w-2 h-2 bg-amber-400 rounded-full shadow-[0_0_8px_rgba(251,191,36,0.8)]"></div>
+                      )}
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+            <p className="mt-2 text-xs text-amber-500/40">
+              {imageModel === 'gemini-2.5-flash-image' 
+                ? '⚠️ Flash model only supports default 1K (1024×1024) resolution. Use Pro model for 2K/4K.'
+                : 'Higher resolution requires more generation time and may consume more API credits.'}
+            </p>
           </div>
         </div>
 

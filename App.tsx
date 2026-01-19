@@ -20,6 +20,7 @@ const App: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [apiKey, setApiKey] = useState('');
   const [imageModel, setImageModel] = useState('gemini-2.5-flash-image');
+  const [imageSize, setImageSize] = useState<'1K' | '2K' | '4K'>('1K');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +43,7 @@ const App: React.FC = () => {
       setStatus(GenerationStatus.PROCESSING_IMAGE);
 
       // Step 2: Generate Image
-      const imageBase64 = await generateDoufangImage(promptData.imagePrompt, apiKey, imageModel);
+      const imageBase64 = await generateDoufangImage(promptData.imagePrompt, apiKey, imageModel, imageSize);
       
       setResult(prev => prev ? { ...prev, imageUrl: imageBase64 } : null);
       setStatus(GenerationStatus.COMPLETED);
@@ -86,6 +87,8 @@ const App: React.FC = () => {
         setApiKey={setApiKey}
         imageModel={imageModel}
         setImageModel={setImageModel}
+        imageSize={imageSize}
+        setImageSize={setImageSize}
       />
 
       <main className="w-full max-w-5xl space-y-16">

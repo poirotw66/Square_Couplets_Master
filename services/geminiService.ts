@@ -46,18 +46,26 @@ export const generateDoufangPrompt = async (userKeyword: string, apiKey?: string
   }
 };
 
-export const generateDoufangImage = async (prompt: string, apiKey?: string, model: string = 'gemini-2.5-flash-image'): Promise<string> => {
+export const generateDoufangImage = async (prompt: string, apiKey?: string, model: string = 'gemini-2.5-flash-image', imageSize: '1K' | '2K' | '4K' = '1K'): Promise<string> => {
   const ai = getClient(apiKey);
 
-  let config = {};
+  let config: any = {};
+  
+  // Different models have different support for imageConfig
+  // Flash model does NOT support imageConfig parameter - it will cause 400 errors
+  // Only Pro model supports imageConfig with custom sizes
   if (model === 'gemini-3-pro-image-preview') {
+    // Pro model supports all sizes (1K, 2K, 4K)
     config = {
       imageConfig: {
         aspectRatio: "1:1",
-        imageSize: "1K"
+        imageSize: imageSize
       }
     };
   }
+  // For Flash model: Do NOT set imageConfig at all
+  // Flash model only supports default 1K (1024x1024) resolution
+  // Setting imageConfig will cause 400 INVALID_ARGUMENT error
 
   try {
     const response = await ai.models.generateContent({
@@ -65,7 +73,7 @@ export const generateDoufangImage = async (prompt: string, apiKey?: string, mode
       contents: {
         parts: [{ text: prompt }]
       },
-      config: config
+      config: Object.keys(config).length > 0 ? config : undefined
     });
 
     // Extract image
@@ -78,12 +86,27 @@ export const generateDoufangImage = async (prompt: string, apiKey?: string, mode
     throw new Error("No image generated in the response.");
   } catch (e: any) {
     console.error("Image generation failed", e);
+    
+    // Handle 400 errors - invalid argument
+    if (e.status === 400 || e.message?.includes("400") || e.message?.includes("INVALID_ARGUMENT")) {
+      if (model === 'gemini-2.5-flash-image') {
+        // Flash model does not support imageConfig parameter at all
+        throw new Error(`Flash model does not support custom image size settings. It only supports default 1K (1024×1024) resolution. Please use the Pro model if you need higher resolutions (2K/4K).`);
+      } else if (imageSize === '4K') {
+        // 4K might not be supported, suggest 2K
+        throw new Error(`4K resolution may not be supported by this model or your API plan. Please try 2K or 1K in Settings.`);
+      } else {
+        throw new Error(`Invalid request: ${e.message || 'The selected image size or model configuration is not supported. Please try a different size (1K) or check your API settings.'}`);
+      }
+    }
+    
     if (e.status === 403 || e.message?.includes("403")) {
       if (model === 'gemini-3-pro-image-preview') {
         throw new Error(`Permission Denied (403). The 'Pro' model requires a Paid API Key (Billing Enabled). Please switch to 'Flash' in Settings or use a key with billing.`);
       }
       throw new Error(`Permission Denied (403). Your API Key is invalid or does not have access to ${model}.`);
     }
+    
     throw e;
   }
 };
