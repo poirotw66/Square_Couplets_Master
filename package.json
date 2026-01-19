@@ -5,13 +5,14 @@
   "type": "module",
   "main": "bin/doufang-skills.js",
   "bin": {
-    "doufang-skills": "bin/doufang-skills.js"
+    "doufang-skills": "bin/doufang-skills.js",
+    "doufang": "bin/doufang-init.js"
   },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "prepublishOnly": "node -e \"require('fs').chmodSync('bin/doufang-skills.js', 0o755)\""
+    "prepublishOnly": "node -e \"const fs = require('fs'); fs.chmodSync('bin/doufang-skills.js', 0o755); fs.chmodSync('bin/doufang-init.js', 0o755);\""
   },
   "keywords": [
     "claude",

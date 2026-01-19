@@ -136,13 +136,46 @@
 
 本專案的 Claude Agent Skills 已發布到 npm，可以通過以下方式安裝：
 
-### 全域安裝（推薦）
+### 全域安裝 CLI（推薦）
 
 ```bash
 npm install -g @justin_666/square-couplets-master-skills
 ```
 
-安裝後，您可以在任何地方使用 `doufang-skills` 命令：
+### 在您的專案中初始化 Skills
+
+安裝後，前往您的專案目錄並初始化 skills：
+
+```bash
+# 前往您的專案
+cd /path/to/your/project
+
+# 為 Cursor 初始化
+doufang init --ai cursor
+
+# 或為 Windsurf 初始化
+doufang init --ai windsurf
+
+# 或為 Antigravity 初始化
+doufang init --ai antigravity
+
+# 或為 Claude Code 初始化
+doufang init --ai claude
+```
+
+### 使用 Slash Command
+
+初始化後，在 Cursor / Windsurf / Antigravity 中使用 slash command：
+
+```
+/doufang Generate a prompt for wealth theme
+/doufang Create a 2K image using Gemini 3 Pro
+/doufang Optimize this prompt to reduce white space
+```
+
+### CLI 工具命令
+
+安裝後，您還可以使用 `doufang-skills` 命令：
 
 ```bash
 # 列出所有可用的 skills

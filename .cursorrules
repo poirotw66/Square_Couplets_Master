@@ -1,0 +1,48 @@
+# Doufang Skills Configuration
+
+This project uses Doufang Skills for generating Chinese New Year artwork.
+
+## Available Skills
+
+- `generate-doufang-prompt`: Generate professional Doufang artwork prompts based on keywords
+- `generate-doufang-image`: Generate Doufang artwork images using Google Gemini API
+- `optimize-doufang-prompt`: Optimize prompts to reduce white margins and improve composition
+
+## Usage
+
+Use the slash command: `/doufang` followed by your request.
+
+### Examples:
+
+- `/doufang Generate a prompt for wealth theme`
+- `/doufang Create a 2K image using Gemini 3 Pro`
+- `/doufang Optimize this prompt to reduce white space`
+- `/doufang Generate a prompt for health and longevity`
+
+### Skill Details:
+
+**generate-doufang-prompt**: 
+- Input: Keyword or wish phrase (e.g., "wealth", "health", "love")
+- Output: 4-character blessing phrase + detailed image generation prompt
+
+**generate-doufang-image**:
+- Requires: Image prompt (from generate-doufang-prompt or user-provided)
+- Models: Gemini 2.5 Flash (fast, 1K only) or Gemini 3 Pro (high quality, 1K/2K/4K)
+- Requires: GEMINI_API_KEY environment variable
+
+**optimize-doufang-prompt**:
+- Input: Existing prompt with excessive white margins
+- Output: Optimized prompt with minimal margins (2-5%) and better composition
+
+## Skills Location
+
+Skills are located in the `skills/` directory. Each skill has a `SKILL.md` file with detailed instructions.
+
+## API Key Setup
+
+For `generate-doufang-image` skill, set your Gemini API Key:
+```bash
+export GEMINI_API_KEY="your-api-key-here"
+```
+
+Get your API key from: https://aistudio.google.com/

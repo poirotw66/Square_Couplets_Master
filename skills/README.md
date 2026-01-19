@@ -38,13 +38,46 @@ skills 文件位於 `skills/` 目錄中。
 npm install @justin_666/square-couplets-master-skills
 ```
 
-## 🎯 在 Cursor 中使用
+## 🎯 在 Cursor / Windsurf / Antigravity 中使用
 
-### 步驟 1：配置 Cursor 以識別 Skills
+### 快速設置（推薦）
 
-Cursor 會自動掃描專案目錄中的 `skills/` 文件夾。有兩種方式讓 Cursor 找到這些 skills：
+1. **安裝 CLI 工具**：
+   ```bash
+   npm install -g @justin_666/square-couplets-master-skills
+   ```
 
-#### 方法 A：在當前專案中使用（推薦）
+2. **前往您的專案**：
+   ```bash
+   cd /path/to/your/project
+   ```
+
+3. **初始化 Skills**：
+   ```bash
+   # Cursor
+   doufang init --ai cursor
+   
+   # Windsurf
+   doufang init --ai windsurf
+   
+   # Antigravity
+   doufang init --ai antigravity
+   
+   # Claude Code
+   doufang init --ai claude
+   ```
+
+4. **使用 Slash Command**：
+   在 Cursor / Windsurf / Antigravity 的聊天中輸入：
+   ```
+   /doufang Generate a prompt for wealth theme
+   /doufang Create a 2K image using Gemini 3 Pro
+   /doufang Optimize this prompt to reduce white space
+   ```
+
+### 手動設置
+
+如果您想手動設置：
 
 1. **確保 skills 目錄在專案根目錄**：
    ```
@@ -59,29 +92,32 @@ Cursor 會自動掃描專案目錄中的 `skills/` 文件夾。有兩種方式�
    └── ...
    ```
 
-2. **或者從 npm 包中引用**：
-   如果已安裝 npm 包，skills 位於：
-   ```
-   node_modules/@justin_666/square-couplets-master-skills/skills/
-   ```
+2. **創建配置文件**：
+   - Cursor: 創建 `.cursorrules` 文件
+   - Windsurf: 創建 `.windsurfrules` 文件
+   - Antigravity: 創建 `.antigravityrules` 文件
 
-#### 方法 B：全局配置（進階）
+### 使用方式
 
-1. 創建一個全局 skills 目錄（例如 `~/.cursor/skills/`）
-2. 將 skills 文件複製到該目錄
-3. 在 Cursor 設置中配置 skills 路徑
+#### Slash Command（推薦）
 
-### 步驟 2：使用 Skills
+使用 `/doufang` 後跟您的請求：
+
+```
+/doufang Generate a prompt for wealth theme
+/doufang Create a 2K image using Gemini 3 Pro
+/doufang Optimize this prompt to reduce white space
+```
 
 #### 自動載入
 
-當您在 Cursor 中輸入相關任務時，對應的 skill 會自動載入：
+當您在對話中輸入相關任務時，對應的 skill 會自動載入：
 
 **示例對話：**
 ```
 您: "幫我生成一個關於財富的春聯斗方 prompt"
-Cursor: [自動載入 generate-doufang-prompt skill]
-      → 生成提示詞和祝福語
+AI: [自動載入 generate-doufang-prompt skill]
+   → 生成提示詞和祝福語
 ```
 
 #### 手動調用
