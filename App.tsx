@@ -1,30 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Header } from './components/Header';
 import { PromptDisplay } from './components/PromptDisplay';
 import { ImageResult } from './components/ImageResult';
 import { SettingsModal } from './components/SettingsModal';
 import { generateDoufangPrompt, generateDoufangImage } from './services/geminiService';
-import { GenerationStatus } from './types';
+import { GenerationStatus, type GenerationResultData, type AppSettings } from './types';
+import { useLocalStorage } from './hooks/useLocalStorage';
+import { compressImage, validateImageFile } from './utils/imageUtils';
+import { AppError, getUserFriendlyErrorMessage } from './utils/errorHandler';
 
 const App: React.FC = () => {
   const [keyword, setKeyword] = useState('');
   const [status, setStatus] = useState<GenerationStatus>(GenerationStatus.IDLE);
-  const [result, setResult] = useState<{
-    prompt: string;
-    blessingPhrase: string;
-    imageUrl: string;
-  } | null>(null);
+  const [result, setResult] = useState<GenerationResultData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Settings State
+  // Settings State with localStorage persistence
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [apiKey, setApiKey] = useState('');
-  const [imageModel, setImageModel] = useState('gemini-2.5-flash-image');
-  const [imageSize, setImageSize] = useState<'1K' | '2K' | '4K'>('1K');
+  const [settings, setSettings] = useLocalStorage<AppSettings>('app-settings', {
+    apiKey: '',
+    imageModel: 'gemini-2.5-flash-image',
+    imageSize: '1K'
+  });
   
   // Reference Image State
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [referenceImageFile, setReferenceImageFile] = useState<File | null>(null);
+  
+  // Memoized settings getters
+  const apiKey = useMemo(() => settings.apiKey, [settings.apiKey]);
+  const imageModel = useMemo(() => settings.imageModel, [settings.imageModel]);
+  const imageSize = useMemo(() => settings.imageSize, [settings.imageSize]);
+  
+  // Settings setters
+  const setApiKey = useCallback((key: string) => {
+    setSettings(prev => ({ ...prev, apiKey: key }));
+  }, [setSettings]);
+  
+  const setImageModel = useCallback((model: 'gemini-2.5-flash-image' | 'gemini-3-pro-image-preview') => {
+    setSettings(prev => {
+      const newSettings = { ...prev, imageModel: model };
+      // Auto-reset to 1K if switching to Flash model
+      if (model === 'gemini-2.5-flash-image' && prev.imageSize !== '1K') {
+        newSettings.imageSize = '1K';
+      }
+      return newSettings;
+    });
+  }, [setSettings]);
+  
+  const setImageSize = useCallback((size: '1K' | '2K' | '4K') => {
+    setSettings(prev => ({ ...prev, imageSize: size }));
+  }, [setSettings]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,9 +84,15 @@ const App: React.FC = () => {
       setResult(prev => prev ? { ...prev, imageUrl: imageBase64 } : null);
       setStatus(GenerationStatus.COMPLETED);
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err.message || "An unexpected error occurred.");
+      if (err instanceof AppError) {
+        setError(getUserFriendlyErrorMessage(err));
+      } else if (err instanceof Error) {
+        setError(err.message || "發生未知錯誤");
+      } else {
+        setError("發生未知錯誤");
+      }
       setStatus(GenerationStatus.ERROR);
     }
   };
@@ -73,36 +105,62 @@ const App: React.FC = () => {
     setIsSettingsOpen(true); // Open settings to show the change
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      setError('Please upload an image file (JPG, PNG, etc.)');
+    // Validate file
+    const validationError = validateImageFile(file, 10);
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      setError('Image file is too large. Maximum size is 10MB.');
-      return;
-    }
-
-    setReferenceImageFile(file);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const result = event.target?.result as string;
-      setReferenceImage(result);
+    try {
+      setReferenceImageFile(file);
+      // Compress image before storing
+      const compressedDataUrl = await compressImage(file, 500, 1920);
+      setReferenceImage(compressedDataUrl);
       setError(null);
-    };
-    reader.readAsDataURL(file);
-  };
+    } catch (err) {
+      console.error('Image compression failed:', err);
+      // Fallback to original if compression fails
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        setReferenceImage(result);
+        setError(null);
+      };
+      reader.onerror = () => {
+        setError('無法讀取圖片文件');
+      };
+      reader.readAsDataURL(file);
+    }
+  }, []);
 
-  const handleRemoveReferenceImage = () => {
+  const handleRemoveReferenceImage = useCallback(() => {
     setReferenceImage(null);
     setReferenceImageFile(null);
-  };
+  }, []);
+
+  // Keyboard shortcuts
+  React.useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Cmd/Ctrl + K to focus input
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        const input = document.querySelector('input[type="text"]') as HTMLInputElement;
+        input?.focus();
+      }
+      // Escape to close settings
+      if (e.key === 'Escape' && isSettingsOpen) {
+        setIsSettingsOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [isSettingsOpen, setIsSettingsOpen]);
 
   return (
     <div className="min-h-screen pb-20 px-4 flex flex-col items-center max-w-6xl mx-auto selection:bg-amber-500/30 relative pattern-overlay">
@@ -148,7 +206,7 @@ const App: React.FC = () => {
           <div className="absolute -bottom-2 -left-2 w-8 h-8 border-b-2 border-l-2 border-amber-500/40 pointer-events-none"></div>
           <div className="absolute -bottom-2 -right-2 w-8 h-8 border-b-2 border-r-2 border-amber-500/40 pointer-events-none"></div>
           
-          <form onSubmit={handleSubmit} className="relative group">
+          <form onSubmit={handleSubmit} className="relative group" aria-label="Artwork generation form">
              <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-500 via-red-500 to-amber-500 rounded-2xl opacity-50 group-hover:opacity-100 transition duration-500 blur-sm gold-pulse"></div>
              <div className="relative flex items-center bg-gradient-to-br from-red-950 via-red-900 to-red-950 border-2 border-amber-500/30 rounded-xl overflow-hidden shadow-2xl p-1 red-envelope-style">
                 
@@ -163,12 +221,18 @@ const App: React.FC = () => {
                   placeholder="Enter your wish (e.g. Wealth, Love)..."
                   className="flex-1 bg-transparent text-amber-100 px-4 py-4 focus:outline-none text-lg placeholder-amber-700/50 font-serif focus:placeholder-amber-600/30 transition-colors"
                   disabled={status === GenerationStatus.PROCESSING_PROMPT || status === GenerationStatus.PROCESSING_IMAGE}
+                  aria-label="Enter your wish keyword"
+                  aria-describedby="keyword-description"
                 />
                 
                 <button
                   type="submit"
                   disabled={!keyword.trim() || status === GenerationStatus.PROCESSING_PROMPT || status === GenerationStatus.PROCESSING_IMAGE}
                   className="relative bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 text-red-950 font-bold px-8 py-3 rounded-lg hover:brightness-110 disabled:opacity-50 disabled:grayscale transition-all shadow-lg text-sm tracking-widest uppercase mx-1 overflow-hidden group/btn"
+                  aria-label={status === GenerationStatus.IDLE || status === GenerationStatus.COMPLETED || status === GenerationStatus.ERROR 
+                    ? 'Generate artwork' 
+                    : 'Generating artwork'}
+                  aria-busy={status === GenerationStatus.PROCESSING_PROMPT || status === GenerationStatus.PROCESSING_IMAGE}
                 >
                   <span className="relative z-10">{status === GenerationStatus.IDLE || status === GenerationStatus.COMPLETED || status === GenerationStatus.ERROR 
                     ? 'Generate' 
@@ -181,13 +245,14 @@ const App: React.FC = () => {
           {/* Reference Image Upload Section */}
           <div className="mt-6 relative">
             {!referenceImage ? (
-              <label className="group relative flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-amber-500/30 rounded-xl bg-red-950/20 hover:bg-red-900/30 hover:border-amber-500/50 transition-all duration-300 cursor-pointer">
+              <label className="group relative flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-amber-500/30 rounded-xl bg-red-950/20 hover:bg-red-900/30 hover:border-amber-500/50 transition-all duration-300 cursor-pointer" aria-label="Upload reference image">
                 <input
                   type="file"
                   accept="image/*"
                   onChange={handleImageUpload}
                   className="hidden"
                   disabled={status === GenerationStatus.PROCESSING_PROMPT || status === GenerationStatus.PROCESSING_IMAGE}
+                  aria-label="Select reference image file"
                 />
                 <div className="flex flex-col items-center gap-2">
                   <svg className="w-8 h-8 text-amber-500/60 group-hover:text-amber-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -215,6 +280,7 @@ const App: React.FC = () => {
                     onClick={handleRemoveReferenceImage}
                     className="absolute top-2 right-2 p-2 bg-red-950/80 hover:bg-red-900/90 border border-amber-500/30 rounded-full text-amber-400 hover:text-amber-200 transition-all shadow-lg"
                     disabled={status === GenerationStatus.PROCESSING_PROMPT || status === GenerationStatus.PROCESSING_IMAGE}
+                    aria-label="Remove reference image"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -253,7 +319,11 @@ const App: React.FC = () => {
 
         {/* Error Message */}
         {error && (
-          <div className="max-w-md mx-auto bg-red-950/90 border border-red-500/50 text-red-200 p-4 rounded-xl text-center shadow-lg animate-bounce flex flex-col items-center">
+          <div 
+            className="max-w-md mx-auto bg-red-950/90 border border-red-500/50 text-red-200 p-4 rounded-xl text-center shadow-lg animate-bounce flex flex-col items-center"
+            role="alert"
+            aria-live="assertive"
+          >
             <span className="block font-bold mb-1 text-red-400">Error Encountered</span>
             <span className="mb-3 text-sm">{error}</span>
             <div className="flex gap-2">
@@ -263,7 +333,7 @@ const App: React.FC = () => {
               >
                 Configure Settings
               </button>
-              {error.includes("Paid API Key") && imageModel.includes("pro") && (
+              {(error.includes("付費") || error.includes("Paid API Key") || error.includes("BILLING_REQUIRED")) && imageModel.includes("pro") && (
                  <button 
                  onClick={handleSwitchToFlash}
                  className="px-4 py-2 bg-amber-600/20 border border-amber-500 text-amber-300 text-xs rounded hover:bg-amber-600/40 transition-colors"
@@ -288,13 +358,18 @@ const App: React.FC = () => {
                 />
               )}
               {status === GenerationStatus.PROCESSING_PROMPT && (
-                 <div className="h-64 flex flex-col items-center justify-center bg-gradient-to-br from-red-950/30 to-red-900/20 rounded-xl border-2 border-amber-900/30 backdrop-blur-sm animate-pulse relative overflow-hidden">
+                 <div 
+                   className="h-64 flex flex-col items-center justify-center bg-gradient-to-br from-red-950/30 to-red-900/20 rounded-xl border-2 border-amber-900/30 backdrop-blur-sm animate-pulse relative overflow-hidden"
+                   role="status"
+                   aria-live="polite"
+                   aria-label="Generating prompt"
+                 >
                     {/* Decorative Pattern */}
                     <div className="absolute inset-0 opacity-10">
                       <div className="absolute top-4 left-4 text-4xl font-calligraphy text-amber-500/20">福</div>
                       <div className="absolute bottom-4 right-4 text-4xl font-calligraphy text-amber-500/20">財</div>
                     </div>
-                    <div className="relative z-10 w-12 h-12 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin mb-4 shadow-[0_0_20px_rgba(245,158,11,0.3)]"></div>
+                    <div className="relative z-10 w-12 h-12 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin mb-4 shadow-[0_0_20px_rgba(245,158,11,0.3)]" aria-hidden="true"></div>
                     <p className="text-amber-500/70 font-serif italic text-sm">Consulting the ancient texts...</p>
                  </div>
               )}

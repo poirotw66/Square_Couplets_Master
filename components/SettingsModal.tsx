@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, memo, useCallback } from 'react';
 
 declare global {
   interface AIStudio {
@@ -18,7 +18,7 @@ interface SettingsModalProps {
   setImageSize: (size: '1K' | '2K' | '4K') => void;
 }
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({
+export const SettingsModal: React.FC<SettingsModalProps> = memo(({
   isOpen,
   onClose,
   apiKey,
@@ -35,7 +35,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     setHasAIStudio(!!window.aistudio);
   }, []);
 
-  const handleAIStudioSelect = async () => {
+  const handleAIStudioSelect = useCallback(async () => {
     if (window.aistudio) {
       try {
         await window.aistudio.openSelectKey();
@@ -46,7 +46,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         console.error("AI Studio key selection failed", e);
       }
     }
-  };
+  }, []);
 
   if (!isOpen) return null;
 
@@ -82,6 +82,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <button 
             onClick={onClose}
             className="text-amber-500/50 hover:text-amber-200 transition-colors"
+            aria-label="Close settings"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
           </button>
@@ -266,4 +267,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       </div>
     </div>
   );
-};
+});
+
+SettingsModal.displayName = 'SettingsModal';

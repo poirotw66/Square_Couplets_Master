@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, memo, useCallback } from 'react';
 
 interface PromptDisplayProps {
   promptText: string;
   blessingPhrase: string;
 }
 
-export const PromptDisplay: React.FC<PromptDisplayProps> = ({ promptText, blessingPhrase }) => {
+export const PromptDisplay: React.FC<PromptDisplayProps> = memo(({ promptText, blessingPhrase }) => {
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = () => {
+  const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(promptText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  };
+  }, [promptText]);
 
   return (
     <div className="relative group">
@@ -95,4 +95,6 @@ export const PromptDisplay: React.FC<PromptDisplayProps> = ({ promptText, blessi
       </div>
     </div>
   );
-};
+});
+
+PromptDisplay.displayName = 'PromptDisplay';

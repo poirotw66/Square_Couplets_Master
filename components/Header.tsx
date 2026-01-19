@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 interface HeaderProps {
   onOpenSettings: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenSettings }) => {
+export const Header: React.FC<HeaderProps> = memo(({ onOpenSettings }) => {
   return (
     <header className="text-center py-12 px-4 relative z-10 w-full">
       {/* Decorative Lanterns */}
@@ -79,4 +79,6 @@ export const Header: React.FC<HeaderProps> = ({ onOpenSettings }) => {
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-64 md:w-96 h-px bg-gradient-to-r from-transparent via-amber-500 to-transparent"></div>
     </header>
   );
-};
+});
+
+Header.displayName = 'Header';

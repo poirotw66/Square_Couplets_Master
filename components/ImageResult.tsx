@@ -1,25 +1,30 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 interface ImageResultProps {
   imageUrl: string;
   isLoading: boolean;
 }
 
-export const ImageResult: React.FC<ImageResultProps> = ({ imageUrl, isLoading }) => {
+export const ImageResult: React.FC<ImageResultProps> = memo(({ imageUrl, isLoading }) => {
   if (isLoading) {
     return (
-      <div className="w-full aspect-square max-w-md mx-auto bg-gradient-to-br from-red-950/20 to-red-900/10 border-2 border-amber-500/30 rounded-xl backdrop-blur-sm flex flex-col items-center justify-center p-8 relative overflow-hidden gold-pulse">
+      <div 
+        className="w-full aspect-square max-w-md mx-auto bg-gradient-to-br from-red-950/20 to-red-900/10 border-2 border-amber-500/30 rounded-xl backdrop-blur-sm flex flex-col items-center justify-center p-8 relative overflow-hidden gold-pulse"
+        role="status"
+        aria-live="polite"
+        aria-label="Generating image"
+      >
         {/* Decorative Pattern Background */}
-        <div className="absolute inset-0 opacity-5">
+        <div className="absolute inset-0 opacity-5" aria-hidden="true">
           <div className="absolute top-8 left-8 text-6xl font-calligraphy text-amber-500">福</div>
           <div className="absolute bottom-8 right-8 text-6xl font-calligraphy text-amber-500">財</div>
         </div>
         
         {/* Shimmer effect */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/10 to-transparent -translate-x-full animate-[shimmer_2s_infinite]"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/10 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" aria-hidden="true"></div>
         
         <div className="relative z-10 text-center">
-            <div className="w-20 h-20 mx-auto mb-6 relative">
+            <div className="w-20 h-20 mx-auto mb-6 relative" aria-hidden="true">
                  <div className="absolute inset-0 border-4 border-amber-500/20 rounded-full shadow-[0_0_20px_rgba(245,158,11,0.2)]"></div>
                  <div className="absolute inset-0 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
                  <div className="absolute inset-4 bg-amber-500/10 rounded-full animate-pulse"></div>
@@ -51,8 +56,9 @@ export const ImageResult: React.FC<ImageResultProps> = ({ imageUrl, isLoading })
            <div className="relative w-full aspect-square overflow-hidden shadow-[inset_0_2px_8px_rgba(0,0,0,0.2)] bg-gray-100">
                  <img 
                    src={imageUrl} 
-                   alt="Generated Doufang" 
+                   alt="Generated Doufang artwork" 
                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                   loading="lazy"
                  />
                  {/* Paper Texture Overlay */}
                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/paper-fibers.png')] opacity-20 pointer-events-none mix-blend-multiply"></div>
@@ -86,6 +92,7 @@ export const ImageResult: React.FC<ImageResultProps> = ({ imageUrl, isLoading })
           href={imageUrl} 
           download="doufang-cny-2025.png"
           className="group relative inline-flex items-center justify-center px-8 py-3 overflow-hidden font-medium text-red-950 transition duration-300 ease-out border-2 border-amber-500 rounded-full shadow-md hover:shadow-xl"
+          aria-label="Download generated artwork"
         >
           <span className="absolute inset-0 flex items-center justify-center w-full h-full text-white duration-300 -translate-x-full bg-amber-600 group-hover:translate-x-0 ease">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
@@ -98,4 +105,6 @@ export const ImageResult: React.FC<ImageResultProps> = ({ imageUrl, isLoading })
       </div>
     </div>
   );
-};
+});
+
+ImageResult.displayName = 'ImageResult';

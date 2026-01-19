@@ -6,6 +6,10 @@ import {
   getSimpleUserInputPrompt,
   getImageGenerationPromptWithReference
 } from "../constants";
+import { processImageDataUrl } from "../utils/imageUtils";
+import { handleApiError } from "../utils/errorHandler";
+import { retryWithBackoff } from "../utils/retry";
+import type { GeminiResponse, ApiError } from "../types";
 
 const getClient = (apiKey?: string) => {
   // Use user-provided key if available, otherwise fallback to env var
@@ -17,28 +21,25 @@ const getClient = (apiKey?: string) => {
 };
 
 export const generateDoufangPrompt = async (userKeyword: string, apiKey?: string, referenceImageDataUrl?: string | null): Promise<{ blessingPhrase: string; imagePrompt: string }> => {
-  const ai = getClient(apiKey);
-  
-  try {
+  return retryWithBackoff(async () => {
+    const ai = getClient(apiKey);
+    
+    try {
     // Prepare content parts
     const parts: any[] = [];
     
     // Add reference image if provided - image should come first
     if (referenceImageDataUrl) {
-      // Convert data URL to base64 and extract mime type
-      const base64Match = referenceImageDataUrl.match(/^data:([^;]+);base64,(.+)$/);
-      if (base64Match) {
-        const mimeType = base64Match[1];
-        const base64Data = base64Match[2];
-        
+      const imageData = processImageDataUrl(referenceImageDataUrl);
+      if (imageData) {
         parts.push({
           inlineData: {
-            mimeType: mimeType,
-            data: base64Data
+            mimeType: imageData.mimeType,
+            data: imageData.base64Data
           }
         });
       } else {
-        // If it's already base64 without data URL prefix
+        // Fallback: try to use as-is (may fail, but attempt anyway)
         console.warn('Reference image format may be incorrect, attempting to use as-is');
         parts.push({
           inlineData: {
@@ -86,20 +87,18 @@ export const generateDoufangPrompt = async (userKeyword: string, apiKey?: string
       throw new Error("No response from Gemini");
     }
 
-    return JSON.parse(text);
-  } catch (e: any) {
-    console.error("Prompt generation failed", e);
-    if (e.status === 403 || e.message?.includes("403")) {
-      throw new Error("Permission Denied (403) during text generation. Your API Key might be invalid or lacks access to 'gemini-3-flash-preview'.");
+      return JSON.parse(text);
+    } catch (e: unknown) {
+      throw handleApiError(e, 'generateDoufangPrompt');
     }
-    throw e;
-  }
+  });
 };
 
 export const generateDoufangImage = async (prompt: string, apiKey?: string, model: string = 'gemini-2.5-flash-image', imageSize: '1K' | '2K' | '4K' = '1K', referenceImageDataUrl?: string | null): Promise<string> => {
-  const ai = getClient(apiKey);
+  return retryWithBackoff(async () => {
+    const ai = getClient(apiKey);
 
-  let config: any = {};
+    let config: Record<string, unknown> = {};
   
   // Different models have different support for imageConfig
   // Flash model does NOT support imageConfig parameter - it will cause 400 errors
@@ -126,20 +125,16 @@ export const generateDoufangImage = async (prompt: string, apiKey?: string, mode
     // (generated in generateDoufangPrompt), so we just need to provide the image
     // as additional visual reference for the image generation model
     if (referenceImageDataUrl) {
-      // Convert data URL to base64 and extract mime type
-      const base64Match = referenceImageDataUrl.match(/^data:([^;]+);base64,(.+)$/);
-      if (base64Match) {
-        const mimeType = base64Match[1];
-        const base64Data = base64Match[2];
-        
+      const imageData = processImageDataUrl(referenceImageDataUrl);
+      if (imageData) {
         parts.push({
           inlineData: {
-            mimeType: mimeType,
-            data: base64Data
+            mimeType: imageData.mimeType,
+            data: imageData.base64Data
           }
         });
       } else {
-        // If it's already base64 without data URL prefix, try to detect mime type
+        // Fallback: try to use as-is (may fail, but attempt anyway)
         console.warn('Reference image format may be incorrect, attempting to use as-is');
         parts.push({
           inlineData: {
@@ -174,38 +169,20 @@ export const generateDoufangImage = async (prompt: string, apiKey?: string, mode
       }
     }
 
-    throw new Error("No image generated in the response.");
-  } catch (e: any) {
-    console.error("Image generation failed", e);
-    
-    // Handle errors related to reference images
-    if (referenceImageDataUrl && (e.status === 400 || e.message?.includes("400") || e.message?.includes("INVALID_ARGUMENT"))) {
-      // Check if error might be related to reference image format
-      if (e.message?.includes("image") || e.message?.includes("format") || e.message?.includes("mime")) {
-        throw new Error(`Reference image format may not be supported. Please try a different image (JPG, PNG recommended). Original error: ${e.message}`);
+      throw new Error("No image generated in the response.");
+    } catch (e: unknown) {
+      const error = handleApiError(e, 'generateDoufangImage');
+      
+      // Add specific context for image size errors
+      if (error.code === 'INVALID_REQUEST') {
+        if (model === 'gemini-2.5-flash-image') {
+          error.userMessage = 'Flash 模型不支援自訂圖片大小設定，僅支援預設 1K (1024×1024) 解析度。如需更高解析度，請使用 Pro 模型。';
+        } else if (imageSize === '4K') {
+          error.userMessage = '4K 解析度可能不被此模型或您的 API 方案支援，請嘗試 2K 或 1K。';
+        }
       }
+      
+      throw error;
     }
-    
-    // Handle 400 errors - invalid argument
-    if (e.status === 400 || e.message?.includes("400") || e.message?.includes("INVALID_ARGUMENT")) {
-      if (model === 'gemini-2.5-flash-image') {
-        // Flash model does not support imageConfig parameter at all
-        throw new Error(`Flash model does not support custom image size settings. It only supports default 1K (1024×1024) resolution. Please use the Pro model if you need higher resolutions (2K/4K).`);
-      } else if (imageSize === '4K') {
-        // 4K might not be supported, suggest 2K
-        throw new Error(`4K resolution may not be supported by this model or your API plan. Please try 2K or 1K in Settings.`);
-      } else {
-        throw new Error(`Invalid request: ${e.message || 'The selected image size or model configuration is not supported. Please try a different size (1K) or check your API settings.'}`);
-      }
-    }
-    
-    if (e.status === 403 || e.message?.includes("403")) {
-      if (model === 'gemini-3-pro-image-preview') {
-        throw new Error(`Permission Denied (403). The 'Pro' model requires a Paid API Key (Billing Enabled). Please switch to 'Flash' in Settings or use a key with billing.`);
-      }
-      throw new Error(`Permission Denied (403). Your API Key is invalid or does not have access to ${model}.`);
-    }
-    
-    throw e;
-  }
+  });
 };
