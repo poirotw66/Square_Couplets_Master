@@ -106,10 +106,89 @@ Skills are located in the \`skills/\` directory.
   writeFileSync(cursorRulesPath, cursorRules);
   console.log(`   ✅ Created ${cursorRulesPath}`);
   
+  // Create .cursor/rules directory for slash command
+  const cursorRulesDir = join(projectPath, '.cursor', 'rules');
+  if (!existsSync(cursorRulesDir)) {
+    mkdirSync(cursorRulesDir, { recursive: true });
+  }
+  
+  // Create doufang.mdc rule file for slash command
+  const doufangRulePath = join(cursorRulesDir, 'doufang.mdc');
+  const doufangRule = `---
+description: Generate Chinese New Year Doufang artwork using Doufang Skills. Use /doufang command to generate prompts, images, or optimize prompts.
+globs: 
+---
+
+# Doufang Skills - Slash Command Handler
+
+You are a Doufang assistant. When the user uses the \`/doufang\` command or asks about Doufang functionality, follow these guidelines:
+
+## Available CLI Commands
+
+1. **Generate Prompt**: \`doufang-prompt <keyword> [reference-image]\`
+   - Generates a professional Doufang artwork prompt based on a keyword
+   - Example: \`doufang-prompt "財富"\`
+   - Example with reference: \`doufang-prompt "健康" images/reference.png\`
+
+2. **Generate Image**: \`doufang-image <prompt> [model] [size] [reference-image] [output-path]\`
+   - Generates actual Doufang artwork images using Gemini API
+   - Models: \`gemini-2.5-flash-image\` (fast, 1K only) or \`gemini-3-pro-image-preview\` (high quality, 1K/2K/4K)
+   - Sizes: \`1K\` (default), \`2K\`, \`4K\` (Pro model only)
+   - Example: \`doufang-image "A diamond-shaped Doufang..." gemini-3-pro-image-preview 2K\`
+
+3. **Optimize Prompt**: \`doufang-optimize <prompt>\`
+   - Optimizes prompts to reduce white margins and improve composition
+   - Example: \`doufang-optimize "A prompt with wide margins..."\`
+
+## Execution Guidelines
+
+- **Direct CLI Execution**: When user requests Doufang functionality, directly execute the appropriate CLI command using terminal, do NOT create .js files
+- **Read API Key**: Automatically read GEMINI_API_KEY from .env or .env.local file
+- **Ask for Details**: If user doesn't provide required parameters (like keyword or prompt), ask for clarification
+- **Error Handling**: If API key is missing, guide user to set GEMINI_API_KEY in .env file
+- **Output Format**: For prompt generation, output JSON format. For image generation, save to output/ directory and provide file path
+
+## Common Workflows
+
+### Generate Image from Keyword
+1. Generate prompt: \`doufang-prompt "財富"\`
+2. Extract imagePrompt from JSON output
+3. Generate image: \`doufang-image "<imagePrompt>" gemini-3-pro-image-preview 2K\`
+
+### Generate Image with Reference
+1. Generate prompt with reference: \`doufang-prompt "健康" images/reference.png\`
+2. Extract imagePrompt from JSON output
+3. Generate image: \`doufang-image "<imagePrompt>" gemini-3-pro-image-preview 2K images/reference.png\`
+
+### Optimize and Generate
+1. Generate prompt: \`doufang-prompt "財富"\`
+2. Optimize prompt: \`doufang-optimize "<imagePrompt>"\`
+3. Generate image with optimized prompt: \`doufang-image "<optimizedPrompt>" gemini-3-pro-image-preview 2K\`
+
+## Skills Location
+
+Skills are located in the \`skills/\` directory. Each skill has a \`SKILL.md\` file with detailed instructions.
+
+## API Key Setup
+
+The \`generate-doufang-image\` command requires GEMINI_API_KEY. Check for it in:
+- .env.local (priority)
+- .env
+- Environment variable GEMINI_API_KEY
+
+Get API key from: https://aistudio.google.com/
+`;
+  
+  writeFileSync(doufangRulePath, doufangRule);
+  console.log(`   ✅ Created ${doufangRulePath}`);
+  console.log(`   ✅ Slash command /doufang registered in Cursor`);
+  
   console.log('\n✨ Cursor setup complete!');
   console.log('\n📝 Usage:');
-  console.log('   Type "/doufang" in Cursor chat followed by your request');
-  console.log('   Example: /doufang Generate a prompt for wealth theme');
+  console.log('   1. Type "/" in Cursor chat to see available commands');
+  console.log('   2. Select "/doufang" from the dropdown');
+  console.log('   3. Enter your request, e.g.: "Generate a prompt for wealth theme"');
+  console.log('   4. Or directly type: /doufang Generate a prompt for wealth theme');
   
   return true;
 }

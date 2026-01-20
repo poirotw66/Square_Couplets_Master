@@ -23,6 +23,37 @@ doufang-skills show generate-doufang-prompt
 doufang-skills path generate-doufang-image
 ```
 
+### 使用 CLI 命令執行 Skills
+
+安裝後，您可以直接使用 CLI 命令執行 skills：
+
+```bash
+# 生成 prompt
+doufang-prompt "財富"
+doufang-prompt "健康" images/reference.png
+
+# 生成圖片
+doufang-image "A diamond-shaped Doufang..." gemini-3-pro-image-preview 2K
+doufang-image "..." gemini-3-pro-image-preview 2K images/ref.png output/my-doufang.png
+
+# 優化 prompt
+doufang-optimize "A diamond-shaped Doufang with wide white margins..."
+```
+
+### 直接執行 Skill 腳本
+
+您也可以直接執行 skill 腳本：
+
+```bash
+# 從專案根目錄
+node skills/generate-doufang-prompt/index.js "財富"
+node skills/generate-doufang-image/index.js "..." gemini-3-pro-image-preview 2K
+node skills/optimize-doufang-prompt/index.js "..."
+
+# 從 npm 包（如果已安裝）
+node node_modules/@justin_666/square-couplets-master-skills/skills/generate-doufang-prompt/index.js "財富"
+```
+
 ### 方式 2：從 GitHub 克隆
 
 ```bash
@@ -68,12 +99,20 @@ npm install @justin_666/square-couplets-master-skills
    ```
 
 4. **使用 Slash Command**：
-   在 Cursor / Windsurf / Antigravity 的聊天中輸入：
+   
+   **在 Cursor 中**：
+   - 輸入 `/` 會自動顯示 `/doufang` 選項（已自動註冊）
+   - 選擇 `/doufang` 後輸入您的請求
+   - 或直接輸入：`/doufang Generate a prompt for wealth theme`
+   
+   **在 Windsurf / Antigravity 中**：
    ```
    /doufang Generate a prompt for wealth theme
    /doufang Create a 2K image using Gemini 3 Pro
    /doufang Optimize this prompt to reduce white space
    ```
+   
+   **注意**：Cursor 會自動識別 `/doufang` 命令並使用 CLI 工具執行，無需手動編寫代碼。
 
 ### 手動設置
 

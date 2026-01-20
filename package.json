@@ -1,18 +1,21 @@
 {
   "name": "@justin_666/square-couplets-master-skills",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Claude Agent Skills for generating Chinese New Year Doufang (diamond-shaped couplet) artwork using Google Gemini AI",
   "type": "module",
   "main": "bin/doufang-skills.js",
   "bin": {
     "doufang-skills": "bin/doufang-skills.js",
-    "doufang": "bin/doufang-init.js"
+    "doufang": "bin/doufang-init.js",
+    "doufang-prompt": "bin/doufang-prompt.js",
+    "doufang-image": "bin/doufang-image.js",
+    "doufang-optimize": "bin/doufang-optimize.js"
   },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "prepublishOnly": "node -e \"const fs = require('fs'); fs.chmodSync('bin/doufang-skills.js', 0o755); fs.chmodSync('bin/doufang-init.js', 0o755);\""
+    "prepublishOnly": "node -e \"const fs = require('fs'); ['doufang-skills.js', 'doufang-init.js', 'doufang-prompt.js', 'doufang-image.js', 'doufang-optimize.js'].forEach(f => fs.chmodSync('bin/' + f, 0o755));\""
   },
   "keywords": [
     "claude",
@@ -42,6 +45,10 @@
   "files": [
     "bin/",
     "skills/",
+    "services/",
+    "utils/",
+    "constants.ts",
+    "types.ts",
     "README.md",
     "LICENSE",
     "package.json"

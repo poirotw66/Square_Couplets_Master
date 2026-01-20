@@ -167,6 +167,13 @@ doufang init --ai claude
 
 初始化後，在 Cursor / Windsurf / Antigravity 中使用 slash command：
 
+**在 Cursor 中（自動註冊）：**
+- 執行 `doufang init --ai cursor` 後，`/doufang` 命令會自動註冊
+- 輸入 `/` 會看到 `/doufang` 選項
+- 選擇後輸入請求，例如："Generate a prompt for wealth theme"
+- Cursor 會自動使用 CLI 工具執行，無需手動編寫代碼
+
+**在 Windsurf / Antigravity 中：**
 ```
 /doufang Generate a prompt for wealth theme
 /doufang Create a 2K image using Gemini 3 Pro
@@ -175,8 +182,9 @@ doufang init --ai claude
 
 ### CLI 工具命令
 
-安裝後，您還可以使用 `doufang-skills` 命令：
+安裝後，您可以使用多個 CLI 命令：
 
+**管理 Skills：**
 ```bash
 # 列出所有可用的 skills
 doufang-skills list
@@ -190,6 +198,25 @@ doufang-skills path generate-doufang-image
 # 查看幫助
 doufang-skills help
 ```
+
+**執行 Skills（Agent 可直接調用）：**
+```bash
+# 生成 prompt
+doufang-prompt "財富"
+doufang-prompt "健康" images/reference.png
+
+# 生成圖片
+doufang-image "A diamond-shaped Doufang..." gemini-3-pro-image-preview 2K
+doufang-image "..." gemini-2.5-flash-image 1K images/ref.png output/my-doufang.png
+
+# 優化 prompt
+doufang-optimize "A diamond-shaped Doufang with wide white margins..."
+```
+
+**Agent 使用方式：**
+Agent 可以直接執行這些 CLI 命令來生成圖片，無需手動編寫代碼。例如：
+- Agent 執行：`doufang-prompt "財富"` → 獲得 prompt
+- Agent 執行：`doufang-image "<prompt>" gemini-3-pro-image-preview 2K` → 生成圖片
 
 ### 本地安裝
 
