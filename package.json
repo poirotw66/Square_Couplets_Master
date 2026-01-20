@@ -1,6 +1,6 @@
 {
   "name": "@justin_666/square-couplets-master-skills",
-  "version": "1.0.8",
+  "version": "1.0.15",
   "description": "Claude Agent Skills for generating Chinese New Year Doufang (diamond-shaped couplet) artwork using Google Gemini AI",
   "type": "module",
   "main": "bin/doufang-skills.js",
@@ -14,8 +14,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:cli": "tsc --project tsconfig.cli.json && node fix-imports.js",
     "preview": "vite preview",
-    "prepublishOnly": "node -e \"const fs = require('fs'); ['doufang-skills.js', 'doufang-init.js', 'doufang-prompt.js', 'doufang-image.js', 'doufang-optimize.js'].forEach(f => fs.chmodSync('bin/' + f, 0o755));\""
+    "prepublishOnly": "npm run build:cli && node -e \"const fs = require('fs'); ['doufang-skills.js', 'doufang-init.js', 'doufang-prompt.js', 'doufang-image.js', 'doufang-optimize.js'].forEach(f => fs.chmodSync('bin/' + f, 0o755));\""
   },
   "keywords": [
     "claude",
@@ -45,10 +46,7 @@
   "files": [
     "bin/",
     "skills/",
-    "services/",
-    "utils/",
-    "constants.ts",
-    "types.ts",
+    "dist/",
     "README.md",
     "LICENSE",
     "package.json"
@@ -60,10 +58,10 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "dotenv": "^17.2.3"
+    "dotenv": "^17.2.3",
+    "@google/genai": "^1.37.0"
   },
   "devDependencies": {
-    "@google/genai": "^1.37.0",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
     "react": "^19.2.3",

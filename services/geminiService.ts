@@ -6,7 +6,7 @@ import {
   getSimpleUserInputPrompt,
   getImageGenerationPromptWithReference
 } from "../constants";
-import { processImageDataUrl } from "../utils/imageUtils";
+import { processImageDataUrl } from "../utils/imageUtils.node";
 import { handleApiError } from "../utils/errorHandler";
 import { retryWithBackoff } from "../utils/retry";
 import type { GeminiContentPart } from "../types";

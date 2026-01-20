@@ -11,31 +11,6 @@ import { readFileSync, writeFileSync, existsSync, statSync, mkdirSync } from 'fs
 import { execSync } from 'child_process';
 import { createRequire } from 'module';
 
-// Load environment variables helper
-async function loadEnvironmentVariables() {
-  try {
-    const dotenv = await import('dotenv');
-    const envLocalPath = join(projectRoot, '.env.local');
-    const envPath = join(projectRoot, '.env');
-    const cwdEnvLocalPath = join(process.cwd(), '.env.local');
-    const cwdEnvPath = join(process.cwd(), '.env');
-
-    if (existsSync(envLocalPath)) {
-      dotenv.config({ path: envLocalPath });
-    } else if (existsSync(envPath)) {
-      dotenv.config({ path: envPath });
-    } else if (existsSync(cwdEnvLocalPath)) {
-      dotenv.config({ path: cwdEnvLocalPath });
-    } else if (existsSync(cwdEnvPath)) {
-      dotenv.config({ path: cwdEnvPath });
-    } else {
-      dotenv.config();
-    }
-  } catch (e) {
-    // dotenv not available, continue without it (will use environment variables)
-  }
-}
-
 // Resolve project root and service path
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -92,26 +67,12 @@ function findServicesPath() {
   return null;
 }
 
-// Load environment variables
-const envLocalPath = join(projectRoot, '.env.local');
-const envPath = join(projectRoot, '.env');
-const cwdEnvLocalPath = join(process.cwd(), '.env.local');
-const cwdEnvPath = join(process.cwd(), '.env');
-
-if (existsSync(envLocalPath)) {
-  dotenvConfig({ path: envLocalPath });
-} else if (existsSync(envPath)) {
-  dotenvConfig({ path: envPath });
-} else if (existsSync(cwdEnvLocalPath)) {
-  dotenvConfig({ path: cwdEnvLocalPath });
-} else if (existsSync(cwdEnvPath)) {
-  dotenvConfig({ path: cwdEnvPath });
-} else {
-  dotenvConfig();
-}
 
 async function main() {
   try {
+    // Load environment variables first
+    await loadEnvironmentVariables();
+    
     // Parse command line arguments
     const args = process.argv.slice(2);
     const prompt = args[0];
@@ -167,21 +128,40 @@ async function main() {
       process.exit(1);
     }
 
-    // Dynamic import of service (support both .ts and .js)
+    // Dynamic import of service (prioritize compiled .js from dist/)
     let serviceModule;
-    try {
-      // Try .js first (for npm package)
-      serviceModule = await import(`file://${join(servicesPath, 'geminiService.js')}`);
-    } catch (e) {
+    const possibleServicePaths = [
+      // 1. Compiled JS in dist/ (npm package)
+      join(dirname(servicesPath), 'dist', 'services', 'geminiService.js'),
+      // 2. Compiled JS in services/ (if built locally)
+      join(servicesPath, 'geminiService.js'),
+      // 3. Source TS (development only)
+      join(servicesPath, 'geminiService.ts'),
+    ];
+    
+    let importError = null;
+    for (const servicePath of possibleServicePaths) {
       try {
-        // Try .ts (for development)
-        serviceModule = await import(`file://${join(servicesPath, 'geminiService.ts')}`);
-      } catch (e2) {
-        console.error('❌ Error: Cannot import service module');
-        console.error('   Tried:', join(servicesPath, 'geminiService.js'));
-        console.error('   Tried:', join(servicesPath, 'geminiService.ts'));
-        process.exit(1);
+        if (existsSync(servicePath)) {
+          serviceModule = await import(`file://${servicePath}`);
+          break;
+        }
+      } catch (e) {
+        importError = e;
+        continue;
       }
+    }
+    
+    if (!serviceModule) {
+      console.error('❌ Error: Cannot import service module');
+      console.error('   Tried paths:');
+      possibleServicePaths.forEach(p => console.error(`   - ${p}`));
+      if (importError) {
+        console.error('\n   Last error:', importError.message);
+      }
+      console.error('\n💡 This usually means the package was not properly built.');
+      console.error('   Please report this issue at: https://github.com/poirotw66/Square_Couplets_Master/issues');
+      process.exit(1);
     }
     const { generateDoufangImage } = serviceModule;
 

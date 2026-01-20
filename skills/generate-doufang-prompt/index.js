@@ -42,7 +42,7 @@ const __dirname = dirname(__filename);
 const skillDir = resolve(__dirname);
 const projectRoot = resolve(skillDir, '../..');
 
-// Try to find services directory
+// Try to find dist directory (compiled JS) or services directory (source TS)
 function findServicesPath() {
   // Get npm global prefix to find globally installed packages
   let globalPrefix = null;
@@ -62,29 +62,42 @@ function findServicesPath() {
     // Package not found via require.resolve, will try other paths
   }
   
+  // Build list of possible paths
+  // IMPORTANT: We're looking for dist/services (compiled) not services/ (source)
   const possiblePaths = [
-    // Global npm package (highest priority - most reliable for installed packages)
+    // Global npm package - dist directory (compiled JS)
     ...(globalPrefix ? [
-      join(globalPrefix, 'lib', 'node_modules', '@justin_666', 'square-couplets-master-skills', 'services'),
-      join(globalPrefix, 'node_modules', '@justin_666', 'square-couplets-master-skills', 'services'),
+      join(globalPrefix, 'lib', 'node_modules', '@justin_666', 'square-couplets-master-skills', 'dist', 'services'),
+      join(globalPrefix, 'node_modules', '@justin_666', 'square-couplets-master-skills', 'dist', 'services'),
     ] : []),
-    // From resolved package root (if it has services)
-    ...(packageRoot ? [join(packageRoot, 'services')] : []),
-    // Local project root
-    join(projectRoot, 'services'),
-    // Local node_modules
-    join(projectRoot, 'node_modules', '@justin_666', 'square-couplets-master-skills', 'services'),
-    // Current working directory
+    // From resolved package root - dist directory
+    ...(packageRoot ? [
+      join(packageRoot, 'dist', 'services'),
+      join(packageRoot, 'services'), // fallback to source
+    ] : []),
+    // Local project root - dist directory
+    join(projectRoot, 'dist', 'services'),
+    join(projectRoot, 'services'), // fallback to source
+    // Local node_modules - dist directory
+    join(projectRoot, 'node_modules', '@justin_666', 'square-couplets-master-skills', 'dist', 'services'),
+    // Current working directory - dist directory
+    join(process.cwd(), 'dist', 'services'),
     join(process.cwd(), 'services'),
     // Current working directory node_modules
-    join(process.cwd(), 'node_modules', '@justin_666', 'square-couplets-master-skills', 'services'),
+    join(process.cwd(), 'node_modules', '@justin_666', 'square-couplets-master-skills', 'dist', 'services'),
   ];
 
-  // Debug: log all paths being checked (only in development)
+  // Debug: log all paths being checked (enable with DEBUG_DOUFANG=1)
   if (process.env.DEBUG_DOUFANG) {
     console.log('🔍 Checking paths for services directory:');
+    console.log(`   packageRoot: ${packageRoot || 'not found'}`);
+    console.log(`   globalPrefix: ${globalPrefix || 'not found'}`);
+    console.log(`   projectRoot: ${projectRoot}`);
+    console.log(`   cwd: ${process.cwd()}`);
+    console.log('\n   Trying paths:');
     for (const path of possiblePaths) {
-      console.log(`   - ${path} ${existsSync(path) ? '✅' : '❌'}`);
+      const exists = existsSync(path);
+      console.log(`   ${exists ? '✅' : '❌'} ${path}`);
     }
   }
   
@@ -92,7 +105,7 @@ function findServicesPath() {
     try {
       if (statSync(path).isDirectory()) {
         if (process.env.DEBUG_DOUFANG) {
-          console.log(`✅ Found services at: ${path}`);
+          console.log(`\n✅ Found services at: ${path}`);
         }
         return path;
       }
@@ -103,7 +116,7 @@ function findServicesPath() {
   
   // If not found, provide helpful error message
   if (process.env.DEBUG_DOUFANG) {
-    console.log('❌ Services directory not found in any of the checked paths');
+    console.log('\n❌ Services directory not found in any of the checked paths');
   }
   return null;
 }
@@ -146,33 +159,40 @@ async function main() {
       process.exit(1);
     }
 
-    // Dynamic import of service (support both .ts and .js)
+    // Dynamic import of service (prioritize compiled .js from dist/)
     let serviceModule;
-    try {
-      // Try .js first (for compiled npm package)
-      serviceModule = await import(`file://${join(servicesPath, 'geminiService.js')}`);
-    } catch (e) {
+    const possibleServicePaths = [
+      // 1. Compiled JS in dist/ (npm package)
+      join(dirname(servicesPath), 'dist', 'services', 'geminiService.js'),
+      // 2. Compiled JS in services/ (if built locally)
+      join(servicesPath, 'geminiService.js'),
+      // 3. Source TS (development only)
+      join(servicesPath, 'geminiService.ts'),
+    ];
+    
+    let importError = null;
+    for (const servicePath of possibleServicePaths) {
       try {
-        // Try .ts (for development or source packages)
-        // Node.js cannot directly import .ts files
-        console.error('❌ Error: Cannot import TypeScript service module');
-        console.error('   The package contains TypeScript source files (.ts) which cannot be directly executed');
-        console.error('');
-        console.error('💡 Solution: Use the CLI command instead (recommended):');
-        console.error(`   doufang-prompt "${keyword}"${referenceImagePath ? ` ${referenceImagePath}` : ''}`);
-        console.error('');
-        console.error('   Or if you need to use the script directly:');
-        console.error('   1. Install tsx: npm install -g tsx');
-        console.error(`   2. Run: tsx skills/generate-doufang-prompt/index.js "${keyword}"${referenceImagePath ? ` ${referenceImagePath}` : ''}`);
-        process.exit(1);
-      } catch (e2) {
-        console.error('❌ Error: Cannot import service module');
-        console.error('   Tried:', join(servicesPath, 'geminiService.js'));
-        console.error('   Tried:', join(servicesPath, 'geminiService.ts'));
-        console.error('   💡 Solution: Use the CLI command instead:');
-        console.error(`      doufang-prompt "${keyword}"${referenceImagePath ? ` ${referenceImagePath}` : ''}`);
-        process.exit(1);
+        if (existsSync(servicePath)) {
+          serviceModule = await import(`file://${servicePath}`);
+          break;
+        }
+      } catch (e) {
+        importError = e;
+        continue;
       }
+    }
+    
+    if (!serviceModule) {
+      console.error('❌ Error: Cannot import service module');
+      console.error('   Tried paths:');
+      possibleServicePaths.forEach(p => console.error(`   - ${p}`));
+      if (importError) {
+        console.error('\n   Last error:', importError.message);
+      }
+      console.error('\n💡 This usually means the package was not properly built.');
+      console.error('   Please report this issue at: https://github.com/poirotw66/Square_Couplets_Master/issues');
+      process.exit(1);
     }
     const { generateDoufangPrompt } = serviceModule;
 
