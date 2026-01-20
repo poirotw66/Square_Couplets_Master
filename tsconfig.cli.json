@@ -34,7 +34,6 @@
     "dist",
     "**/*.test.ts",
     "**/*.spec.ts",
-    "src",
-    "examples"
+    "src"
   ]
 }

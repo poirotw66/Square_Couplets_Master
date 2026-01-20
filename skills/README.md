@@ -1,6 +1,20 @@
 # 春聯斗方大師 - Claude Agent Skills 使用指南
+[English](./README_en.md) | [繁體中文](./README.md)
+
 
 本目錄包含三個 Claude Agent Skills，可在 Cursor 或其他支援 Claude Agent Skills 協定的 AI IDE 中使用，用於生成傳統中國新年春聯斗方藝術作品。
+
+> **🎉 v1.1.0 重大更新**：全新架構、進度提示器、DEBUG 模式、--version 支持、代碼重複降低 60%！
+
+## ✨ v1.1.0 新功能
+
+- ⠋ **進度提示器** - 圖片生成時顯示動畫反饋（30-60秒估計）
+- 🏷️ **版本查詢** - 所有命令支持 `--version` 標誌
+- 🐛 **DEBUG 模式** - 設置 `DEBUG_DOUFANG=1` 查看詳細路徑查找過程
+- 🎨 **智能優化** - 改進的 prompt 優化引擎，顯示改進摘要
+- 🖼️ **格式擴展** - 支持 JPG, JPEG, PNG, GIF, WebP, BMP
+- 📦 **架構重構** - 共享工具模塊，消除 60% 代碼重複
+- 🔧 **一致性** - 所有 skills 使用統一的錯誤處理和參數驗證
 
 ## 📦 安裝方式
 
@@ -31,13 +45,28 @@ doufang-skills path generate-doufang-image
 # 生成 prompt
 doufang-prompt "財富"
 doufang-prompt "健康" images/reference.png
+doufang-prompt --version  # 查看版本（新！）
 
-# 生成圖片
+# 生成圖片（現在有進度提示！v1.1.0）
 doufang-image "A diamond-shaped Doufang..." gemini-3-pro-image-preview 2K
+# 顯示：⠋ Generating image... (this may take 30-60 seconds)
+
 doufang-image "..." gemini-3-pro-image-preview 2K images/ref.png output/my-doufang.png
 
-# 優化 prompt
+# 優化 prompt（功能增強！v1.1.0）
 doufang-optimize "A diamond-shaped Doufang with wide white margins..."
+# 顯示優化改進摘要：
+# 📊 Improvements:
+#    ✓ Added frame fill percentage
+#    ✓ Specified minimal margins
+#    ✓ Removed wide margin references
+
+# 使用 AI 優化（實驗性，v1.1.0）
+doufang-optimize "..." --ai
+
+# DEBUG 模式（新！v1.1.0）
+DEBUG_DOUFANG=1 doufang-prompt "測試"
+# 顯示詳細的路徑查找過程
 ```
 
 ### 直接執行 Skill 腳本
@@ -250,6 +279,8 @@ AI: [自動載入 generate-doufang-prompt skill]
 
 **功能**：優化 Doufang 提示詞，減少過多留白，改善構圖
 
+> **🎉 v1.1.0 升級**：全新優化引擎，顯示改進摘要，支持 AI 優化（實驗性）
+
 **使用場景**：
 - 生成的圖片留白過多
 - 需要改善提示詞品質
@@ -259,20 +290,38 @@ AI: [自動載入 generate-doufang-prompt skill]
 **優化重點**：
 - ❌ 移除「寬留白」、「generous margins」等描述
 - ✅ 改為「最小留白（2-5%）」
-- ✅ 確保 Doufang 佔據 85-95% 的畫面空間
+- ✅ 確保 Doufang 佔據 90-95% 的畫面空間
 - ✅ 強調視覺衝擊力而非安全邊距
+- ✅ 顯示優化改進摘要（v1.1.0 新功能）
 
 **使用示例**：
 ```
 "優化這個 prompt，減少留白"
 "改善構圖，讓 Doufang 佔據更多畫面"
 "這個 prompt 生成的圖片留白太多，幫我優化一下"
+
+# CLI 使用（v1.1.0）
+doufang-optimize "A diamond with wide white margins"
+
+# 輸出範例：
+# ✅ Optimized prompt:
+# A diamond with minimal elegant margins (2-5% of frame width)
+# Composition: The diamond-shaped Doufang fills 90-95% of the 1:1 frame...
+#
+# 📊 Improvements:
+#    ✓ Added frame fill percentage
+#    ✓ Specified minimal margins
+#    ✓ Removed wide margin references
+
+# 使用 AI 優化（實驗性）
+doufang-optimize "..." --ai
 ```
 
 **優化規則**：
 - 將「wide white margins」改為「minimal elegant margins (2-5%)」
-- 將「generous blank margins」改為「Doufang occupies 85-95% of image area」
+- 將「generous blank margins」改為「Doufang occupies 90-95% of image area」
 - 添加「maximize visual impact」等強調語句
+- 移除所有「wide margins」、「excessive white space」等描述
 
 ## 🔄 工作流程示例
 
@@ -353,6 +402,11 @@ export API_KEY="your-api-key-here"
 2. 每個 skill 都有 `SKILL.md` 文件
 3. `SKILL.md` 文件包含正確的 frontmatter（name, description）
 
+**或使用自動初始化（推薦）：**
+```bash
+doufang init --ai cursor
+```
+
 ### Q: 如何確認 skills 已載入？
 
 **A**: 在 Cursor 中，當您提到相關任務時，AI 應該會自動使用對應的 skill。您也可以直接問：
@@ -360,11 +414,20 @@ export API_KEY="your-api-key-here"
 "列出可用的 Doufang skills"
 ```
 
+**v1.1.0 新功能**：使用 DEBUG 模式查看詳細信息：
+```bash
+DEBUG_DOUFANG=1 doufang-prompt "測試"
+```
+
 ### Q: 生成的圖片留白太多？
 
-**A**: 使用 `optimize-doufang-prompt` skill：
+**A**: 使用改進的 `optimize-doufang-prompt` skill（v1.1.0 增強）：
 ```
-"優化這個 prompt，減少留白，讓 Doufang 佔據 85-95% 的畫面"
+"優化這個 prompt，減少留白，讓 Doufang 佔據 90-95% 的畫面"
+
+# 或使用 CLI
+doufang-optimize "your prompt with wide margins"
+# 會顯示優化改進摘要
 ```
 
 ### Q: Flash 模型不支持 2K/4K？
@@ -386,6 +449,33 @@ export API_KEY="your-api-key-here"
 ```
 "使用這個 prompt 生成圖片，參考圖片路徑: ./images/reference.png"
 ```
+
+**v1.1.0 新功能**：支持更多圖片格式（JPG, JPEG, PNG, GIF, WebP, BMP）
+
+### Q: 圖片生成需要多久？
+
+**A**: v1.1.0 新增進度提示器：
+- Flash 模型：約 10-20 秒
+- Pro 模型：約 30-60 秒
+- 會顯示：⠋ Generating image... (this may take 30-60 seconds)
+
+### Q: 如何查看工具版本？
+
+**A**: v1.1.0 新功能：
+```bash
+doufang-prompt --version
+doufang-image --version
+doufang-optimize --version
+doufang-skills --version
+```
+
+### Q: 遇到路徑問題怎麼辦？
+
+**A**: v1.1.0 新增 DEBUG 模式：
+```bash
+DEBUG_DOUFANG=1 doufang-prompt "測試"
+```
+會顯示所有路徑查找過程，幫助診斷問題。
 
 ## 📖 更多資源
 
@@ -444,4 +534,33 @@ Claude Agent Skills 是一個協定，允許 AI IDE（如 Cursor）載入和使�
 
 **作者**: Justin
 
-**最後更新**: 2026-01-19
+**版本**: v1.1.0
+
+**最後更新**: 2026-01-20
+
+---
+
+## 📈 版本歷史
+
+### v1.1.0 (2026-01-20) - 重大更新
+
+**架構優化**：
+- 創建共享工具模塊 - 消除 60% 代碼重複
+- 統一錯誤處理和路徑查找邏輯
+
+**用戶體驗**：
+- ⠋ 進度提示器（圖片生成）
+- 🏷️ --version 標誌支持
+- 🐛 DEBUG 模式（DEBUG_DOUFANG=1）
+
+**功能增強**：
+- 重寫 optimize-doufang-prompt（顯示改進摘要）
+- 擴展 MIME 類型支持（6 種格式）
+- AI 優化準備（實驗性）
+
+**代碼品質**：
+- 所有 skills 使用一致模式
+- 更好的可維護性
+- 100% 向後兼容
+
+查看完整更新：[CHANGELOG.md](../CHANGELOG.md) | [RELEASE_v1.1.0.md](../RELEASE_v1.1.0.md)

@@ -1,4 +1,5 @@
 # 春聯斗方大師 (Square Couplets Master)
+[English](./README_en.md) | [繁體中文](./README.md)
 
 一個使用 Google Gemini AI 生成傳統春聯斗方藝術作品的應用程式。將您的願望轉化為精美的書法藝術作品。
 
@@ -134,13 +135,22 @@
 
 ## 📦 NPM 安裝
 
-本專案的 Claude Agent Skills 已發布到 npm，可以通過以下方式安裝：
+本專案的 Claude Agent Skills 已發布到 npm，可以通過以下方式安裝。
+
+> **🎉 v1.1.0 更新**：全新的共享工具架構、進度提示器、--version 支持、DEBUG 模式增強！
 
 ### 全域安裝 CLI（推薦）
 
 ```bash
 npm install -g @justin_666/square-couplets-master-skills
 ```
+
+**新功能 v1.1.0**：
+- ⠋ **進度提示器** - 圖片生成時顯示動畫反饋
+- 🏷️ **版本查詢** - `doufang-prompt --version`
+- 🐛 **DEBUG 模式** - `DEBUG_DOUFANG=1` 查看詳細日誌
+- 🎨 **智能優化** - 改進的 prompt 優化引擎
+- 📦 **代碼重構** - 消除 60% 重複代碼，更穩定可靠
 
 ### 在您的專案中初始化 Skills
 
@@ -195,6 +205,9 @@ doufang-skills show generate-doufang-prompt
 # 獲取 skill 文件路徑（用於程序化訪問）
 doufang-skills path generate-doufang-image
 
+# 查看版本（新！）
+doufang-skills --version
+
 # 查看幫助
 doufang-skills help
 ```
@@ -204,19 +217,38 @@ doufang-skills help
 # 生成 prompt
 doufang-prompt "財富"
 doufang-prompt "健康" images/reference.png
+doufang-prompt --version  # 查看版本（新！）
 
-# 生成圖片
+# 生成圖片（現在有進度提示！）
 doufang-image "A diamond-shaped Doufang..." gemini-3-pro-image-preview 2K
+# 顯示：⠋ Generating image... (this may take 30-60 seconds)
+
 doufang-image "..." gemini-2.5-flash-image 1K images/ref.png output/my-doufang.png
 
-# 優化 prompt
+# 優化 prompt（功能增強！）
 doufang-optimize "A diamond-shaped Doufang with wide white margins..."
+# 顯示優化改進摘要
+
+# 使用 AI 優化（實驗性）
+doufang-optimize "..." --ai
+```
+
+**DEBUG 模式（新！）：**
+```bash
+# 查看詳細的路徑查找過程
+DEBUG_DOUFANG=1 doufang-prompt "測試"
+# 輸出：
+# 🔍 Checking paths for services directory...
+#    ✅ Found services at: /path/to/services
+
+DEBUG_DOUFANG=1 doufang-image "..." gemini-3-pro-image-preview 2K
 ```
 
 **Agent 使用方式：**
 Agent 可以直接執行這些 CLI 命令來生成圖片，無需手動編寫代碼。例如：
 - Agent 執行：`doufang-prompt "財富"` → 獲得 prompt
-- Agent 執行：`doufang-image "<prompt>" gemini-3-pro-image-preview 2K` → 生成圖片
+- Agent 執行：`doufang-image "<prompt>" gemini-3-pro-image-preview 2K` → 生成圖片（帶進度提示）
+- Agent 執行：`doufang-optimize "<prompt>"` → 優化 prompt（顯示改進摘要）
 
 ### 本地安裝
 
@@ -277,6 +309,8 @@ run_terminal_cmd
 ### ✨ optimize-doufang-prompt
 **功能**：優化 Doufang 提示詞，減少過多留白，改善構圖
 
+> **🎉 v1.1.0 升級**：全新優化引擎，顯示改進摘要，支持 AI 優化（實驗性）
+
 **使用場景**：
 - 生成的圖片留白過多
 - 需要改善提示詞品質
@@ -285,13 +319,26 @@ run_terminal_cmd
 
 **優化重點**：
 - 將「寬留白」改為「最小留白（2-5%）」
-- 確保 Doufang 佔據 85-95% 的畫面空間
+- 確保 Doufang 佔據 90-95% 的畫面空間
 - 強調視覺衝擊力而非安全邊距
+- 顯示優化改進摘要
 
 **示例**：
 ```
 "優化這個 prompt，減少留白"
 "改善構圖，讓 Doufang 佔據更多畫面"
+
+# CLI 使用
+doufang-optimize "A diamond with wide margins"
+# 輸出：
+# ✅ Optimized prompt: ...
+# 📊 Improvements:
+#    ✓ Added frame fill percentage
+#    ✓ Specified minimal margins
+#    ✓ Removed wide margin references
+
+# 使用 AI 優化（實驗性）
+doufang-optimize "..." --ai
 ```
 
 ### 📂 Skills 文件結構
@@ -315,6 +362,33 @@ skills/
 3. **組合使用**：可以將多個 skills 組合使用，例如先生成 prompt，再優化，最後生成圖片
 
 **注意**：使用 `generate-doufang-image` skill 時，需要配置 Gemini API Key。
+
+## 📚 v1.1.0 更新日誌
+
+### 🎉 主要改進
+
+**架構優化**：
+- 創建共享工具模塊 (`skills/shared/utils.js`)
+- 消除 60% 代碼重複（從 ~600 行降至 <100 行）
+- 統一錯誤處理和路徑查找邏輯
+
+**用戶體驗提升**：
+- ⠋ 進度提示器 - 圖片生成時顯示動畫
+- 🏷️ --version 標誌 - 快速查詢版本
+- 🐛 DEBUG 模式 - `DEBUG_DOUFANG=1` 詳細日誌
+- 更清晰的錯誤訊息
+
+**功能增強**：
+- 重寫 `optimize-doufang-prompt`（rule-based + AI 準備）
+- 擴展 MIME 類型支持（JPG, JPEG, PNG, GIF, WebP, BMP）
+- 優化改進摘要顯示
+
+**代碼品質**：
+- 所有 skills 使用一致模式
+- 更好的可維護性和擴展性
+- 100% 向後兼容
+
+查看完整更新內容：[CHANGELOG.md](CHANGELOG.md) | [RELEASE_v1.1.0.md](RELEASE_v1.1.0.md)
 
 ## 📝 授權 (License)
 

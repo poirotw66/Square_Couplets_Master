@@ -143,8 +143,8 @@ const App: React.FC = () => {
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
-      }
-    };
+    }
+  };
   }, []);
 
   const handleSwitchToFlash = useCallback(() => {
@@ -347,7 +347,7 @@ const App: React.FC = () => {
               </div>
             )}
           </div>
-
+          
           {/* Suggestions */}
           <div className="flex gap-3 mt-8 justify-center flex-wrap">
             {['Wealth & Prosperity', 'Career Success', 'Love & Harmony', 'Health & Longevity', 'Academic Wisdom'].map((suggestion, index) => (
@@ -447,8 +447,8 @@ const App: React.FC = () => {
         <div className="mt-8 mb-4">
           <div className="w-32 h-px bg-gradient-to-r from-transparent via-amber-900/50 to-transparent mx-auto mb-4"></div>
           <p className="text-amber-900/50 text-xs font-serif tracking-widest uppercase">
-            Powered by Google Gemini 2.5 & 3.0
-          </p>
+          Powered by Google Gemini 2.5 & 3.0
+        </p>
           <p className="text-amber-900/30 text-xs font-serif mt-2 italic">
             May your year be filled with prosperity and joy
           </p>
