@@ -26,11 +26,11 @@ When user reports that generated images have excessive white margins, poor compo
    
    **Replace with:**
    - ✅ "centered with minimal elegant margins (approximately 2-5% of frame width, just enough to prevent edge cropping)"
-   - ✅ "minimal margins - the Doufang should fill most of the frame (85-95% of image area)"
-   - ✅ "The Doufang should occupy 85-95% of the image area, maximizing visual impact"
+   - ✅ "minimal margins - the Doufang should fill most of the frame (90 - 95% of image area)"
+   - ✅ "The Doufang should occupy 90 - 95% of the image area, maximizing visual impact"
 
 3. **Add explicit composition instructions:**
-   - Add: "The Doufang should fill 85-95% of the frame"
+   - Add: "The Doufang should fill 90 - 95% of the frame"
    - Add: "Minimal margins (2-5% of frame width)"
    - Add: "Maximize visual impact by making the Doufang occupy most of the frame"
    - Add: "Avoid excessive white space or wide margins"
@@ -61,7 +61,7 @@ When user reports that generated images have excessive white margins, poor compo
 
 **After:**
 ```
-"...The Doufang should occupy 85-95% of the image area, maximizing visual impact..."
+"...The Doufang should occupy 90 - 95% of the image area, maximizing visual impact..."
 ```
 
 ### Rule 3: Composition Emphasis
@@ -72,7 +72,7 @@ When user reports that generated images have excessive white margins, poor compo
 
 **After:**
 ```
-"...minimal margins - the Doufang should fill most of the frame (85-95% of image area)..."
+"...minimal margins - the Doufang should fill most of the frame (90 - 95% of image area)..."
 ```
 
 ## Examples
@@ -86,7 +86,7 @@ A diamond-shaped Chinese New Year Doufang centered in a 1:1 frame with wide whit
 
 **Optimized Prompt:**
 ```
-A diamond-shaped Chinese New Year Doufang fills the majority of the 1:1 frame, centered with minimal elegant margins (approximately 2-5% of frame width, just enough to prevent edge cropping). The Doufang should occupy 85-95% of the image area, maximizing visual impact. The artwork is a masterpiece of traditional ink-wash fusion...
+A diamond-shaped Chinese New Year Doufang fills the majority of the 1:1 frame, centered with minimal elegant margins (approximately 2-5% of frame width, just enough to prevent edge cropping). The Doufang should occupy 90 - 95% of the image area, maximizing visual impact. The artwork is a masterpiece of traditional ink-wash fusion...
 ```
 
 ### Example 2: Improving Composition Instructions
@@ -98,7 +98,7 @@ Composition: The diamond-shaped Doufang is fully visible and centered, with gene
 
 **Optimized Prompt:**
 ```
-Composition: The diamond-shaped Doufang fills 85-95% of the 1:1 frame, centered with minimal elegant margins (approximately 2-5% of frame width, just enough to prevent edge cropping). The entire artwork is fully visible inside the frame, not touching any edge, not cropped, not cut off. The Doufang should occupy most of the image area, maximizing visual impact. Clean background, symmetrical, perfectly framed, suitable for printing and hanging on wall.
+Composition: The diamond-shaped Doufang fills 90 - 95% of the 1:1 frame, centered with minimal elegant margins (approximately 2-5% of frame width, just enough to prevent edge cropping). The entire artwork is fully visible inside the frame, not touching any edge, not cropped, not cut off. The Doufang should occupy most of the image area, maximizing visual impact. Clean background, symmetrical, perfectly framed, suitable for printing and hanging on wall.
 ```
 
 ### Example 3: Complete Prompt Optimization
@@ -115,7 +115,7 @@ Framing requirements:
 ```
 Framing requirements:
 - The entire diamond-shaped Doufang must be fully visible inside the image.
-- Minimal margins - the Doufang should fill most of the frame (85-95% of image area).
+- Minimal margins - the Doufang should fill most of the frame (90 - 95% of image area).
 - No cropping, no touching edges, no cut-off.
 - Maximize visual impact by making the Doufang occupy most of the frame.
 ```
@@ -123,7 +123,7 @@ Framing requirements:
 ## Key Optimization Principles
 
 1. **Never use "wide" or "generous" margins** - Always specify minimal margins (2-5%)
-2. **Always specify frame fill percentage** - 85-95% of image area
+2. **Always specify frame fill percentage** - 90 - 95% of image area
 3. **Emphasize visual impact** - Over safety margins
 4. **Be specific about margin size** - "2-5% of frame width"
 5. **Clarify purpose** - "just enough to prevent edge cropping"

@@ -47,7 +47,7 @@ Lighting: soft studio lighting, gentle glow on gold details, museum-quality artw
 Composition: 
 The diamond-shaped Doufang fills the majority of the 1:1 frame, centered with minimal elegant margins (approximately 2-5% of frame width, just enough to prevent edge cropping).
 The entire artwork is fully visible inside the frame, not touching any edge, not cropped, not cut off.
-The Doufang should occupy 85-95% of the image area, maximizing visual impact.
+The Doufang should occupy 90 - 95% of the image area, maximizing visual impact.
 Clean background, symmetrical, perfectly framed, suitable for printing and hanging on wall.
 
 Quality: ultra high detail, 8k, masterpiece, professional artwork, 1:1 aspect ratio.
@@ -55,7 +55,7 @@ Quality: ultra high detail, 8k, masterpiece, professional artwork, 1:1 aspect ra
 Framing requirements:
 - The entire diamond-shaped Doufang must be fully visible inside the image.
 - No part of the artwork is cut off, cropped, out of frame, or touching the image borders.
-- Minimal margins - the Doufang should fill most of the frame (85-95% of image area).
+- Minimal margins - the Doufang should fill most of the frame ( 90 - 95% of image area).
 
 Text requirements:
 - The Chinese characters must be clear, correct, readable.
@@ -146,7 +146,7 @@ Your generated "imagePrompt" must follow this logic:
 1. **Framing**:
    - The entire diamond Doufang must be fully contained within the 1:1 frame.
    - Minimal, elegant margins - just enough to prevent edge cropping (approximately 2-5% of frame width).
-   - The Doufang should fill most of the frame (85-95% of the image area).
+   - The Doufang should fill most of the frame ( 90 - 95% of the image area).
    - No cropping, no touching edges, no cut-off.
 2. **Text Quality**:
    - Calligraphy must be clear, professional, and correctly written.
@@ -159,7 +159,7 @@ Your generated "imagePrompt" must follow this logic:
 Composition: 
 The diamond-shaped Doufang fills the majority of the 1:1 frame, centered with minimal elegant margins (just enough to prevent edge cropping, approximately 2-5% of frame width).
 The entire artwork is fully visible inside the frame, not touching any edge, not cropped, not cut off.
-The Doufang should occupy 85-95% of the image area, maximizing visual impact.
+The Doufang should occupy 90 - 95% of the image area, maximizing visual impact.
 Clean background, symmetrical, perfectly framed, suitable for printing and hanging on wall.
 
 Quality: ultra high detail, 8k, masterpiece, professional artwork, 1:1 aspect ratio.
@@ -167,7 +167,7 @@ Quality: ultra high detail, 8k, masterpiece, professional artwork, 1:1 aspect ra
 Framing requirements:
 - The entire diamond-shaped Doufang must be fully visible inside the image.
 - No part of the artwork is cut off, cropped, out of frame, or touching the image borders.
-- Minimal margins - the Doufang should fill most of the frame (85-95% of image area).
+- Minimal margins - the Doufang should fill most of the frame ( 90 - 95% of image area).
 
 Text requirements:
 - The Chinese characters must be clear, correct, readable.
@@ -234,7 +234,7 @@ export const getSimpleUserInputPrompt = (userKeyword: string): string => {
 export const getImageGenerationPromptWithReference = (basePrompt: string): string => {
   return `${basePrompt}
 
-IMPORTANT COMPOSITION NOTE: The diamond-shaped Doufang should fill 85-95% of the frame with minimal margins (2-5% of frame width). Avoid excessive white space or wide margins. Maximize the visual impact by making the Doufang artwork occupy most of the image area.
+IMPORTANT COMPOSITION NOTE: The diamond-shaped Doufang should fill 90 - 95% of the frame with minimal margins (2-5% of frame width). Avoid excessive white space or wide margins. Maximize the visual impact by making the Doufang artwork occupy most of the image area.
 
 Note: The reference image provided above should be used as a visual style guide. Follow the style, color palette, and artistic approach described in the prompt, which was generated based on analysis of this reference image.`;
 };

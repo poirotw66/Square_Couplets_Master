@@ -1,6 +1,6 @@
 {
   "name": "@justin_666/square-couplets-master-skills",
-  "version": "1.0.15",
+  "version": "1.0.19",
   "description": "Claude Agent Skills for generating Chinese New Year Doufang (diamond-shaped couplet) artwork using Google Gemini AI",
   "type": "module",
   "main": "bin/doufang-skills.js",

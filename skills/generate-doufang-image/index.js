@@ -38,21 +38,26 @@ function findServicesPath() {
   }
   
   const possiblePaths = [
-    // Global npm package (highest priority - most reliable for installed packages)
+    // Global npm package - dist directory (compiled JS)
     ...(globalPrefix ? [
-      join(globalPrefix, 'lib', 'node_modules', '@justin_666', 'square-couplets-master-skills', 'services'),
-      join(globalPrefix, 'node_modules', '@justin_666', 'square-couplets-master-skills', 'services'),
+      join(globalPrefix, 'lib', 'node_modules', '@justin_666', 'square-couplets-master-skills', 'dist', 'services'),
+      join(globalPrefix, 'node_modules', '@justin_666', 'square-couplets-master-skills', 'dist', 'services'),
     ] : []),
-    // From resolved package root (if it has services)
-    ...(packageRoot ? [join(packageRoot, 'services')] : []),
-    // Local project root
-    join(projectRoot, 'services'),
-    // Local node_modules
-    join(projectRoot, 'node_modules', '@justin_666', 'square-couplets-master-skills', 'services'),
-    // Current working directory
+    // From resolved package root - dist directory
+    ...(packageRoot ? [
+      join(packageRoot, 'dist', 'services'),
+      join(packageRoot, 'services'), // fallback to source
+    ] : []),
+    // Local project root - dist directory
+    join(projectRoot, 'dist', 'services'),
+    join(projectRoot, 'services'), // fallback to source
+    // Local node_modules - dist directory
+    join(projectRoot, 'node_modules', '@justin_666', 'square-couplets-master-skills', 'dist', 'services'),
+    // Current working directory - dist directory
+    join(process.cwd(), 'dist', 'services'),
     join(process.cwd(), 'services'),
     // Current working directory node_modules
-    join(process.cwd(), 'node_modules', '@justin_666', 'square-couplets-master-skills', 'services'),
+    join(process.cwd(), 'node_modules', '@justin_666', 'square-couplets-master-skills', 'dist', 'services'),
   ];
 
   for (const path of possiblePaths) {
@@ -67,6 +72,30 @@ function findServicesPath() {
   return null;
 }
 
+// Load environment variables helper
+async function loadEnvironmentVariables() {
+  try {
+    const dotenv = await import('dotenv');
+    const envLocalPath = join(projectRoot, '.env.local');
+    const envPath = join(projectRoot, '.env');
+    const cwdEnvLocalPath = join(process.cwd(), '.env.local');
+    const cwdEnvPath = join(process.cwd(), '.env');
+
+    if (existsSync(envLocalPath)) {
+      dotenv.config({ path: envLocalPath });
+    } else if (existsSync(envPath)) {
+      dotenv.config({ path: envPath });
+    } else if (existsSync(cwdEnvLocalPath)) {
+      dotenv.config({ path: cwdEnvLocalPath });
+    } else if (existsSync(cwdEnvPath)) {
+      dotenv.config({ path: cwdEnvPath });
+    } else {
+      dotenv.config();
+    }
+  } catch (e) {
+    // dotenv not available, continue without it (will use environment variables)
+  }
+}
 
 async function main() {
   try {
