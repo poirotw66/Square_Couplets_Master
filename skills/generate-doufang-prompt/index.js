@@ -8,7 +8,33 @@
 import { fileURLToPath } from 'url';
 import { dirname, join, resolve } from 'path';
 import { readFileSync, existsSync, statSync } from 'fs';
-import { config } from 'dotenv';
+import { execSync } from 'child_process';
+import { createRequire } from 'module';
+
+// Load environment variables helper
+async function loadEnvironmentVariables() {
+  try {
+    const dotenv = await import('dotenv');
+    const envLocalPath = join(projectRoot, '.env.local');
+    const envPath = join(projectRoot, '.env');
+    const cwdEnvLocalPath = join(process.cwd(), '.env.local');
+    const cwdEnvPath = join(process.cwd(), '.env');
+
+    if (existsSync(envLocalPath)) {
+      dotenv.config({ path: envLocalPath });
+    } else if (existsSync(envPath)) {
+      dotenv.config({ path: envPath });
+    } else if (existsSync(cwdEnvLocalPath)) {
+      dotenv.config({ path: cwdEnvLocalPath });
+    } else if (existsSync(cwdEnvPath)) {
+      dotenv.config({ path: cwdEnvPath });
+    } else {
+      dotenv.config();
+    }
+  } catch (e) {
+    // dotenv not available, continue without it (will use environment variables)
+  }
+}
 
 // Resolve project root and service path
 const __filename = fileURLToPath(import.meta.url);
@@ -18,40 +44,76 @@ const projectRoot = resolve(skillDir, '../..');
 
 // Try to find services directory
 function findServicesPath() {
+  // Get npm global prefix to find globally installed packages
+  let globalPrefix = null;
+  try {
+    globalPrefix = execSync('npm config get prefix', { encoding: 'utf-8' }).trim();
+  } catch (e) {
+    // Ignore error, try other methods
+  }
+  
+  // Try to resolve package location using createRequire (works in ES modules)
+  let packageRoot = null;
+  try {
+    const require = createRequire(import.meta.url);
+    const packageJsonPath = require.resolve('@justin_666/square-couplets-master-skills/package.json');
+    packageRoot = dirname(packageJsonPath);
+  } catch (e) {
+    // Package not found via require.resolve, will try other paths
+  }
+  
   const possiblePaths = [
+    // Global npm package (highest priority - most reliable for installed packages)
+    ...(globalPrefix ? [
+      join(globalPrefix, 'lib', 'node_modules', '@justin_666', 'square-couplets-master-skills', 'services'),
+      join(globalPrefix, 'node_modules', '@justin_666', 'square-couplets-master-skills', 'services'),
+    ] : []),
+    // From resolved package root (if it has services)
+    ...(packageRoot ? [join(packageRoot, 'services')] : []),
+    // Local project root
     join(projectRoot, 'services'),
+    // Local node_modules
     join(projectRoot, 'node_modules', '@justin_666', 'square-couplets-master-skills', 'services'),
+    // Current working directory
     join(process.cwd(), 'services'),
+    // Current working directory node_modules
     join(process.cwd(), 'node_modules', '@justin_666', 'square-couplets-master-skills', 'services'),
   ];
 
+  // Debug: log all paths being checked (only in development)
+  if (process.env.DEBUG_DOUFANG) {
+    console.log('🔍 Checking paths for services directory:');
+    for (const path of possiblePaths) {
+      console.log(`   - ${path} ${existsSync(path) ? '✅' : '❌'}`);
+    }
+  }
+  
   for (const path of possiblePaths) {
     try {
       if (statSync(path).isDirectory()) {
+        if (process.env.DEBUG_DOUFANG) {
+          console.log(`✅ Found services at: ${path}`);
+        }
         return path;
       }
     } catch (e) {
       // Path doesn't exist, try next
     }
   }
+  
+  // If not found, provide helpful error message
+  if (process.env.DEBUG_DOUFANG) {
+    console.log('❌ Services directory not found in any of the checked paths');
+  }
   return null;
 }
 
-// Load environment variables
-const envLocalPath = join(projectRoot, '.env.local');
-const envPath = join(projectRoot, '.env');
-
-if (existsSync(envLocalPath)) {
-  config({ path: envLocalPath });
-} else if (existsSync(envPath)) {
-  config({ path: envPath });
-} else {
-  // Try current working directory
-  config();
-}
 
 async function main() {
   try {
+    // Load environment variables first
+    await loadEnvironmentVariables();
+    
     // Parse command line arguments
     const args = process.argv.slice(2);
     const keyword = args[0];
@@ -87,16 +149,28 @@ async function main() {
     // Dynamic import of service (support both .ts and .js)
     let serviceModule;
     try {
-      // Try .js first (for npm package)
+      // Try .js first (for compiled npm package)
       serviceModule = await import(`file://${join(servicesPath, 'geminiService.js')}`);
     } catch (e) {
       try {
-        // Try .ts (for development)
-        serviceModule = await import(`file://${join(servicesPath, 'geminiService.ts')}`);
+        // Try .ts (for development or source packages)
+        // Node.js cannot directly import .ts files
+        console.error('❌ Error: Cannot import TypeScript service module');
+        console.error('   The package contains TypeScript source files (.ts) which cannot be directly executed');
+        console.error('');
+        console.error('💡 Solution: Use the CLI command instead (recommended):');
+        console.error(`   doufang-prompt "${keyword}"${referenceImagePath ? ` ${referenceImagePath}` : ''}`);
+        console.error('');
+        console.error('   Or if you need to use the script directly:');
+        console.error('   1. Install tsx: npm install -g tsx');
+        console.error(`   2. Run: tsx skills/generate-doufang-prompt/index.js "${keyword}"${referenceImagePath ? ` ${referenceImagePath}` : ''}`);
+        process.exit(1);
       } catch (e2) {
         console.error('❌ Error: Cannot import service module');
         console.error('   Tried:', join(servicesPath, 'geminiService.js'));
         console.error('   Tried:', join(servicesPath, 'geminiService.ts'));
+        console.error('   💡 Solution: Use the CLI command instead:');
+        console.error(`      doufang-prompt "${keyword}"${referenceImagePath ? ` ${referenceImagePath}` : ''}`);
         process.exit(1);
       }
     }

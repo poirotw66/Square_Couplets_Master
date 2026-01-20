@@ -8,7 +8,33 @@
 import { fileURLToPath } from 'url';
 import { dirname, join, resolve } from 'path';
 import { readFileSync, writeFileSync, existsSync, statSync, mkdirSync } from 'fs';
-import { config } from 'dotenv';
+import { execSync } from 'child_process';
+import { createRequire } from 'module';
+
+// Load environment variables helper
+async function loadEnvironmentVariables() {
+  try {
+    const dotenv = await import('dotenv');
+    const envLocalPath = join(projectRoot, '.env.local');
+    const envPath = join(projectRoot, '.env');
+    const cwdEnvLocalPath = join(process.cwd(), '.env.local');
+    const cwdEnvPath = join(process.cwd(), '.env');
+
+    if (existsSync(envLocalPath)) {
+      dotenv.config({ path: envLocalPath });
+    } else if (existsSync(envPath)) {
+      dotenv.config({ path: envPath });
+    } else if (existsSync(cwdEnvLocalPath)) {
+      dotenv.config({ path: cwdEnvLocalPath });
+    } else if (existsSync(cwdEnvPath)) {
+      dotenv.config({ path: cwdEnvPath });
+    } else {
+      dotenv.config();
+    }
+  } catch (e) {
+    // dotenv not available, continue without it (will use environment variables)
+  }
+}
 
 // Resolve project root and service path
 const __filename = fileURLToPath(import.meta.url);
@@ -18,10 +44,39 @@ const projectRoot = resolve(skillDir, '../..');
 
 // Try to find services directory
 function findServicesPath() {
+  // Get npm global prefix to find globally installed packages
+  let globalPrefix = null;
+  try {
+    globalPrefix = execSync('npm config get prefix', { encoding: 'utf-8' }).trim();
+  } catch (e) {
+    // Ignore error, try other methods
+  }
+  
+  // Try to resolve package location using createRequire (works in ES modules)
+  let packageRoot = null;
+  try {
+    const require = createRequire(import.meta.url);
+    const packageJsonPath = require.resolve('@justin_666/square-couplets-master-skills/package.json');
+    packageRoot = dirname(packageJsonPath);
+  } catch (e) {
+    // Package not found via require.resolve, will try other paths
+  }
+  
   const possiblePaths = [
+    // Global npm package (highest priority - most reliable for installed packages)
+    ...(globalPrefix ? [
+      join(globalPrefix, 'lib', 'node_modules', '@justin_666', 'square-couplets-master-skills', 'services'),
+      join(globalPrefix, 'node_modules', '@justin_666', 'square-couplets-master-skills', 'services'),
+    ] : []),
+    // From resolved package root (if it has services)
+    ...(packageRoot ? [join(packageRoot, 'services')] : []),
+    // Local project root
     join(projectRoot, 'services'),
+    // Local node_modules
     join(projectRoot, 'node_modules', '@justin_666', 'square-couplets-master-skills', 'services'),
+    // Current working directory
     join(process.cwd(), 'services'),
+    // Current working directory node_modules
     join(process.cwd(), 'node_modules', '@justin_666', 'square-couplets-master-skills', 'services'),
   ];
 
@@ -40,13 +95,19 @@ function findServicesPath() {
 // Load environment variables
 const envLocalPath = join(projectRoot, '.env.local');
 const envPath = join(projectRoot, '.env');
+const cwdEnvLocalPath = join(process.cwd(), '.env.local');
+const cwdEnvPath = join(process.cwd(), '.env');
 
 if (existsSync(envLocalPath)) {
-  config({ path: envLocalPath });
+  dotenvConfig({ path: envLocalPath });
 } else if (existsSync(envPath)) {
-  config({ path: envPath });
+  dotenvConfig({ path: envPath });
+} else if (existsSync(cwdEnvLocalPath)) {
+  dotenvConfig({ path: cwdEnvLocalPath });
+} else if (existsSync(cwdEnvPath)) {
+  dotenvConfig({ path: cwdEnvPath });
 } else {
-  config();
+  dotenvConfig();
 }
 
 async function main() {
