@@ -2,49 +2,50 @@
  * 示例：使用 Gemini 3 Pro 生成 2K 解析度的財富主題春聯斗方
  * 
  * 使用方法：
- * 1. 確保已在 .env.local 中設置 GEMINI_API_KEY
+ * 1. 設置 API Key（支援多種方式）：
+ *    - 在專案根目錄創建 .env 或 .env.local 文件：GEMINI_API_KEY="your-api-key"
+ *    - 或使用環境變數：export GEMINI_API_KEY="your-api-key"
  * 2. 運行：npx tsx examples/generate-wealth-doufang.ts
+ * 
+ * 支援的環境變數名稱：
+ * - GEMINI_API_KEY（優先）
+ * - API_KEY
+ * - GOOGLE_GENAI_API_KEY
  */
 
 import { generateDoufangPrompt, generateDoufangImage } from '../services/geminiService';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-
-// 讀取 .env.local 文件
-function loadEnvLocal() {
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = path.dirname(__filename);
-  const envPath = path.join(__dirname, '../.env.local');
-  
-  if (fs.existsSync(envPath)) {
-    const envContent = fs.readFileSync(envPath, 'utf-8');
-    const lines = envContent.split('\n');
-    
-    for (const line of lines) {
-      const trimmedLine = line.trim();
-      if (trimmedLine && !trimmedLine.startsWith('#')) {
-        const [key, ...valueParts] = trimmedLine.split('=');
-        if (key && valueParts.length > 0) {
-          const value = valueParts.join('=').trim().replace(/^["']|["']$/g, '');
-          process.env[key.trim()] = value;
-        }
-      }
-    }
-  }
-}
+import { config } from 'dotenv';
 
 async function generateWealthDoufang2K() {
   try {
-    // 載入 .env.local
-    loadEnvLocal();
+    // 載入環境變數（優先順序：.env.local > .env）
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const projectRoot = path.join(__dirname, '..');
     
-    // 從環境變數獲取 API Key
-    const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
+    // 先嘗試載入 .env.local（如果存在）
+    const envLocalPath = path.join(projectRoot, '.env.local');
+    if (fs.existsSync(envLocalPath)) {
+      config({ path: envLocalPath });
+    }
+    
+    // 再載入 .env（如果存在）
+    const envPath = path.join(projectRoot, '.env');
+    if (fs.existsSync(envPath)) {
+      config({ path: envPath });
+    }
+    
+    // 從環境變數獲取 API Key（支援多種變數名稱）
+    const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY || process.env.GOOGLE_GENAI_API_KEY;
     
     if (!apiKey) {
       console.error('❌ 錯誤：請設置 GEMINI_API_KEY 環境變數');
-      console.log('💡 提示：export GEMINI_API_KEY="your-api-key"');
+      console.log('💡 提示：');
+      console.log('   1. 在 .env 或 .env.local 文件中設置：GEMINI_API_KEY="your-api-key"');
+      console.log('   2. 或使用環境變數：export GEMINI_API_KEY="your-api-key"');
       process.exit(1);
     }
 

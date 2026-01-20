@@ -2,40 +2,25 @@
  * 示例：使用參考圖片生成春聯斗方
  * 
  * 使用方法：
- * 1. 確保已設置 GEMINI_API_KEY 環境變數或在 .env.local 中配置
+ * 1. 設置 API Key（支援多種方式）：
+ *    - 在專案根目錄創建 .env 或 .env.local 文件：GEMINI_API_KEY="your-api-key"
+ *    - 或使用環境變數：export GEMINI_API_KEY="your-api-key"
  * 2. 運行：npx tsx examples/generate-with-reference.ts <keyword> <image-path>
  * 
  * 示例：
  * npx tsx examples/generate-with-reference.ts "龍馬精神" images/gemini2-5-萬馬奔騰.png
+ * 
+ * 支援的環境變數名稱：
+ * - GEMINI_API_KEY（優先）
+ * - API_KEY
+ * - GOOGLE_GENAI_API_KEY
  */
 
 import { generateDoufangPrompt, generateDoufangImage } from '../services/geminiService';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-
-// 讀取 .env.local 文件
-function loadEnvLocal() {
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = path.dirname(__filename);
-  const envPath = path.join(__dirname, '../.env.local');
-  
-  if (fs.existsSync(envPath)) {
-    const envContent = fs.readFileSync(envPath, 'utf-8');
-    const lines = envContent.split('\n');
-    
-    for (const line of lines) {
-      const trimmedLine = line.trim();
-      if (trimmedLine && !trimmedLine.startsWith('#')) {
-        const [key, ...valueParts] = trimmedLine.split('=');
-        if (key && valueParts.length > 0) {
-          const value = valueParts.join('=').trim().replace(/^["']|["']$/g, '');
-          process.env[key.trim()] = value;
-        }
-      }
-    }
-  }
-}
+import { config } from 'dotenv';
 
 // 讀取圖片並轉換為 base64
 async function loadImageAsDataUrl(imagePath: string): Promise<string> {
@@ -69,19 +54,35 @@ async function loadImageAsDataUrl(imagePath: string): Promise<string> {
 
 async function generateWithReference() {
   try {
-    // 載入環境變數
-    loadEnvLocal();
+    // 載入環境變數（優先順序：.env.local > .env）
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const projectRoot = path.join(__dirname, '..');
+    
+    // 先嘗試載入 .env.local（如果存在）
+    const envLocalPath = path.join(projectRoot, '.env.local');
+    if (fs.existsSync(envLocalPath)) {
+      config({ path: envLocalPath });
+    }
+    
+    // 再載入 .env（如果存在）
+    const envPath = path.join(projectRoot, '.env');
+    if (fs.existsSync(envPath)) {
+      config({ path: envPath });
+    }
     
     // 獲取參數
     const keyword = process.argv[2] || '龍馬精神';
     const imagePath = process.argv[3] || 'images/gemini2-5-萬馬奔騰.png';
     
-    // 從環境變數獲取 API Key
-    const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
+    // 從環境變數獲取 API Key（支援多種變數名稱）
+    const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY || process.env.GOOGLE_GENAI_API_KEY;
     
     if (!apiKey) {
       console.error('❌ 錯誤：請設置 GEMINI_API_KEY 環境變數');
-      console.log('💡 提示：在 .env.local 文件中設置 GEMINI_API_KEY="your-api-key"');
+      console.log('💡 提示：');
+      console.log('   1. 在 .env 或 .env.local 文件中設置：GEMINI_API_KEY="your-api-key"');
+      console.log('   2. 或使用環境變數：export GEMINI_API_KEY="your-api-key"');
       process.exit(1);
     }
 
@@ -158,7 +159,7 @@ async function generateWithReference() {
       console.error('   示例：npx tsx examples/generate-with-reference.ts "龍馬精神" images/gemini2-5-萬馬奔騰.png');
     } else if (error.message?.includes('API Key')) {
       console.error('   請檢查您的 API Key 是否正確設置');
-      console.error('   提示：在 .env.local 文件中設置 GEMINI_API_KEY="your-api-key"');
+      console.error('   提示：在 .env 或 .env.local 文件中設置 GEMINI_API_KEY="your-api-key"');
     } else if (error.message?.includes('billing') || error.message?.includes('BILLING_REQUIRED')) {
       console.error('   Gemini 3 Pro 需要付費 API Key（已啟用帳單）');
       console.error('   請切換到 Flash 模型或啟用帳單');

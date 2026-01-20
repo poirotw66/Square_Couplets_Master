@@ -9,14 +9,27 @@
 ### 前置需求
 
 1. 已安裝依賴：`npm install`
-2. 設置 API Key：
+2. 設置 API Key（支援多種方式）：
+   
+   **方式 1：使用 .env 文件（推薦）**
+   
+   在專案根目錄創建 `.env` 或 `.env.local` 文件：
+   ```bash
+   # .env 或 .env.local
+   GEMINI_API_KEY=your-api-key-here
+   ```
+   
+   腳本會自動讀取 `.env.local`（優先）或 `.env` 文件。
+   
+   **方式 2：使用環境變數**
    ```bash
    export GEMINI_API_KEY="your-api-key-here"
    ```
-   或創建 `.env.local` 文件：
-   ```
-   GEMINI_API_KEY=your-api-key-here
-   ```
+   
+   **支援的環境變數名稱：**
+   - `GEMINI_API_KEY`（優先）
+   - `API_KEY`
+   - `GOOGLE_GENAI_API_KEY`
 
 ### 運行示例
 
