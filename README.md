@@ -266,9 +266,6 @@ import { join } from 'path';
 const skillPath = join(require.resolve('@justin_666/square-couplets-master-skills'), '../skills/generate-doufang-prompt/SKILL.md');
 const skillContent = readFileSync(skillPath, 'utf-8');
 ```
-<｜tool▁calls▁begin｜><｜tool▁call▁begin｜>
-run_terminal_cmd
-
 
 ## 🤖 Claude Agent Skills
 

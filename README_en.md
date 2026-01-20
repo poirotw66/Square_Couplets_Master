@@ -1,5 +1,5 @@
 # Square Couplets Master
-[English](./README_en.md) | [繁體中文](./README_zh-tw.md)
+[English](./README_en.md) | [繁體中文](./README.md)
 
 An application that uses Google Gemini AI to generate traditional Chinese New Year Doufang (square couplet) artwork. Transform your wishes into exquisite calligraphy art pieces.
 
