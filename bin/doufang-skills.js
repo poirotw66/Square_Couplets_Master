@@ -16,6 +16,19 @@ const __dirname = dirname(__filename);
 const packageRoot = resolve(__dirname, '..');
 
 /**
+ * Get package version
+ */
+function getVersion() {
+  try {
+    const packageJsonPath = join(packageRoot, 'package.json');
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+    return packageJson.version || 'unknown';
+  } catch (e) {
+    return 'unknown';
+  }
+}
+
+/**
  * Get the path to skills directory
  */
 function getSkillsPath() {
@@ -120,6 +133,12 @@ function main() {
   const args = process.argv.slice(2);
   const command = args[0];
 
+  // Handle version flag
+  if (command === '--version' || command === '-v' || command === 'version') {
+    console.log(getVersion());
+    process.exit(0);
+  }
+  
   if (!command || command === 'list' || command === 'ls') {
     listSkills();
   } else if (command === 'show' || command === 'view') {
@@ -150,6 +169,7 @@ Commands:
   list, ls              List all available skills
   show <skill-name>     Show a specific skill's content
   path <skill-name>     Get the file path to a skill
+  version, --version    Show version number
   help                  Show this help message
 
 Examples:

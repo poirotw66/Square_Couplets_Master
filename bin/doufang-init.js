@@ -16,6 +16,19 @@ const __dirname = dirname(__filename);
 const packageRoot = resolve(__dirname, '..');
 
 /**
+ * Get package version
+ */
+function getVersion() {
+  try {
+    const packageJsonPath = join(packageRoot, 'package.json');
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+    return packageJson.version || 'unknown';
+  } catch (e) {
+    return 'unknown';
+  }
+}
+
+/**
  * Get the path to skills directory
  */
 function getSkillsPath() {
@@ -308,6 +321,12 @@ function main() {
   const args = process.argv.slice(2);
   const command = args[0];
   
+  // Handle version flag (check before parsing other options)
+  if (command === '--version' || command === '-v' || command === 'version') {
+    console.log(getVersion());
+    process.exit(0);
+  }
+  
   // Parse --ai option
   let aiOption = null;
   for (let i = 0; i < args.length; i++) {
@@ -317,6 +336,9 @@ function main() {
     } else if (args[i]?.startsWith('--ai=')) {
       aiOption = args[i].replace('--ai=', '');
       break;
+    } else if (args[i] === '--version' || args[i] === '-v' || args[i] === 'version') {
+      console.log(getVersion());
+      process.exit(0);
     }
   }
   
@@ -329,6 +351,7 @@ Usage:
 
 Options:
   --ai <assistant>    AI assistant to configure (cursor, windsurf, antigravity, or claude)
+  --version, -v       Show version number
 
 Examples:
   doufang init --ai cursor
