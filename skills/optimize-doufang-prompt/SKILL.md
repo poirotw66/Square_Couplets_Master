@@ -152,3 +152,11 @@ This skill works best when:
 ## Output Format
 
 Return the optimized prompt as a string, maintaining all other aspects of the original prompt while only modifying the composition and margin-related instructions.
+
+## Implementation Notes
+
+- **CRITICAL: Use CLI Command Directly**
+  - Execute: `doufang-optimize <prompt>`
+  - **DO NOT create temporary .js, .ts, or any script files**
+  - **DO NOT write code** - just execute the CLI command directly
+  - The CLI command handles prompt optimization and returns the optimized prompt automatically

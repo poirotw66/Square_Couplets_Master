@@ -106,3 +106,11 @@ When user provides a keyword or wish phrase, generate a professional Doufang art
 - User already has a complete prompt
 - User wants to modify an existing prompt (use `optimize-doufang-prompt` instead)
 - User wants to generate the actual image (use `generate-doufang-image` instead)
+
+## Implementation Notes
+
+- **CRITICAL: Use CLI Command Directly**
+  - Execute: `doufang-prompt <keyword> [reference-image]`
+  - **DO NOT create temporary .js, .ts, or any script files**
+  - **DO NOT write code** - just execute the CLI command directly
+  - The CLI command handles all API calls and returns JSON output automatically

@@ -151,6 +151,12 @@ Error: Network connection error. Please check your internet connection and try a
 
 ## Implementation Notes
 
+- **CRITICAL: Use CLI Command Directly**
+  - Execute: `doufang-image <prompt> [model] [size] [reference-image] [output-path]`
+  - **DO NOT create temporary .js, .ts, or any script files**
+  - **DO NOT write code** - just execute the CLI command directly
+  - The CLI command handles all API calls, error handling, and file operations automatically
+
 - Use retry mechanism for transient errors (500, 503, network errors)
 - Compress reference images if they exceed 500KB
 - Validate image formats (JPEG, PNG supported)

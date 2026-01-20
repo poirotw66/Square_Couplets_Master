@@ -119,20 +119,28 @@ Skills are located in the \`skills/\` directory.
   writeFileSync(cursorRulesPath, cursorRules);
   console.log(`   ✅ Created ${cursorRulesPath}`);
   
-  // Create .cursor/rules directory for slash command
-  const cursorRulesDir = join(projectPath, '.cursor', 'rules');
-  if (!existsSync(cursorRulesDir)) {
-    mkdirSync(cursorRulesDir, { recursive: true });
+  // Create .cursor/commands directory for Cursor Commands (preferred over rules)
+  const cursorCommandsDir = join(projectPath, '.cursor', 'commands');
+  if (!existsSync(cursorCommandsDir)) {
+    mkdirSync(cursorCommandsDir, { recursive: true });
   }
   
-  // Create doufang.mdc rule file for slash command
-  const doufangRulePath = join(cursorRulesDir, 'doufang.mdc');
-  const doufangRule = `---
-description: Generate Chinese New Year Doufang artwork using Doufang Skills. Use /doufang command to generate prompts, images, or optimize prompts.
-globs: 
----
+  // Create doufang.md command file for slash command
+  const doufangCommandPath = join(cursorCommandsDir, 'doufang.md');
+  const doufangCommand = `# Doufang Skills Command
 
-# Doufang Skills - Slash Command Handler
+## Description
+Generate Chinese New Year Doufang artwork using Doufang Skills CLI commands.
+
+## CRITICAL RULES - READ FIRST
+
+**🚨 NEVER CREATE SCRIPT FILES 🚨**
+- **DO NOT** create any .js, .ts, .mjs, or any script files
+- **DO NOT** write code to files
+- **DO** execute CLI commands directly in the terminal
+- The CLI commands are already installed and ready to use
+
+## How This Works
 
 You are a Doufang assistant. When the user uses the \`/doufang\` command or asks about Doufang functionality, follow these guidelines:
 
@@ -153,30 +161,82 @@ You are a Doufang assistant. When the user uses the \`/doufang\` command or asks
    - Optimizes prompts to reduce white margins and improve composition
    - Example: \`doufang-optimize "A prompt with wide margins..."\`
 
+## Step-by-Step Execution Guide
+
+### When User Says: "生成財富主題的 prompt"
+1. Execute this command in terminal: \`doufang-prompt "財富"\`
+2. Wait for JSON output
+3. Show the result to user
+
+### When User Says: "用上述 prompt 生成 2K 圖片"
+1. Extract the imagePrompt from previous output
+2. Execute this command in terminal: \`doufang-image "<imagePrompt>" gemini-3-pro-image-preview 2K\`
+3. Wait for image to be saved
+4. Show the file path to user
+
+### When User Says: "優化這個 prompt"
+1. Execute this command in terminal: \`doufang-optimize "<prompt>"\`
+2. Wait for optimized prompt
+3. Show the result to user
+
 ## Execution Guidelines
 
-- **Direct CLI Execution**: When user requests Doufang functionality, directly execute the appropriate CLI command using terminal, do NOT create .js files
-- **Read API Key**: Automatically read GEMINI_API_KEY from .env or .env.local file
-- **Ask for Details**: If user doesn't provide required parameters (like keyword or prompt), ask for clarification
+- **Use Terminal Command Execution**: Use the run_terminal_cmd tool to execute commands
+- **No Script Creation**: You must NOT create any files. Just execute the CLI commands.
+- **API Key**: Commands automatically read GEMINI_API_KEY from .env or .env.local
 - **Error Handling**: If API key is missing, guide user to set GEMINI_API_KEY in .env file
-- **Output Format**: For prompt generation, output JSON format. For image generation, save to output/ directory and provide file path
+- **Output**: Commands output JSON or save files to output/ directory
 
 ## Common Workflows
 
 ### Generate Image from Keyword
-1. Generate prompt: \`doufang-prompt "財富"\`
+1. Execute: \`doufang-prompt "財富"\` (directly in terminal, no script creation)
 2. Extract imagePrompt from JSON output
-3. Generate image: \`doufang-image "<imagePrompt>" gemini-3-pro-image-preview 2K\`
+3. Execute: \`doufang-image "<imagePrompt>" gemini-3-pro-image-preview 2K\` (directly in terminal, no script creation)
 
 ### Generate Image with Reference
-1. Generate prompt with reference: \`doufang-prompt "健康" images/reference.png\`
+1. Execute: \`doufang-prompt "健康" images/reference.png\` (directly in terminal)
 2. Extract imagePrompt from JSON output
-3. Generate image: \`doufang-image "<imagePrompt>" gemini-3-pro-image-preview 2K images/reference.png\`
+3. Execute: \`doufang-image "<imagePrompt>" gemini-3-pro-image-preview 2K images/reference.png\` (directly in terminal)
 
 ### Optimize and Generate
-1. Generate prompt: \`doufang-prompt "財富"\`
-2. Optimize prompt: \`doufang-optimize "<imagePrompt>"\`
-3. Generate image with optimized prompt: \`doufang-image "<optimizedPrompt>" gemini-3-pro-image-preview 2K\`
+1. Execute: \`doufang-prompt "財富"\` (directly in terminal)
+2. Execute: \`doufang-optimize "<imagePrompt>"\` (directly in terminal)
+3. Execute: \`doufang-image "<optimizedPrompt>" gemini-3-pro-image-preview 2K\` (directly in terminal)
+
+## Example: Complete Workflow
+
+\`\`\`
+User: /doufang 生成一個財富主題的 2K 圖片
+
+Your Action:
+Step 1: Execute in terminal
+$ doufang-prompt "財富"
+[Wait for output]
+
+Step 2: Extract imagePrompt from JSON output, then execute in terminal
+$ doufang-image "<extracted-imagePrompt>" gemini-3-pro-image-preview 2K
+[Wait for image to be saved]
+
+Step 3: Tell user the image path
+\`\`\`
+
+## FINAL REMINDERS
+
+✅ DO:
+- Execute: \`doufang-prompt "keyword"\`
+- Execute: \`doufang-image "prompt" model size\`
+- Execute: \`doufang-optimize "prompt"\`
+- Use run_terminal_cmd tool
+
+❌ DO NOT:
+- Create .js files
+- Create .ts files
+- Create any script files
+- Write code to files
+- Use write tool or edit tool
+
+The commands are already installed. Just run them!
 
 ## Skills Location
 
@@ -192,16 +252,19 @@ The \`generate-doufang-image\` command requires GEMINI_API_KEY. Check for it in:
 Get API key from: https://aistudio.google.com/
 `;
   
-  writeFileSync(doufangRulePath, doufangRule);
-  console.log(`   ✅ Created ${doufangRulePath}`);
-  console.log(`   ✅ Slash command /doufang registered in Cursor`);
+  writeFileSync(doufangCommandPath, doufangCommand);
+  console.log(`   ✅ Created ${doufangCommandPath}`);
+  console.log(`   ✅ Slash command /doufang registered in Cursor Commands`);
   
   console.log('\n✨ Cursor setup complete!');
   console.log('\n📝 Usage:');
-  console.log('   1. Type "/" in Cursor chat to see available commands');
-  console.log('   2. Select "/doufang" from the dropdown');
-  console.log('   3. Enter your request, e.g.: "Generate a prompt for wealth theme"');
-  console.log('   4. Or directly type: /doufang Generate a prompt for wealth theme');
+  console.log('   1. Restart Cursor to load the new command');
+  console.log('   2. Type "/" in Cursor chat to see available commands');
+  console.log('   3. Select "/doufang" from the dropdown');
+  console.log('   4. Enter your request, e.g.: "Generate a prompt for wealth theme"');
+  console.log('   5. Or directly type: /doufang Generate a prompt for wealth theme');
+  console.log('\n⚠️  IMPORTANT: The /doufang command will execute CLI commands directly.');
+  console.log('   It will NOT create any script files. Just run terminal commands.');
   
   return true;
 }
