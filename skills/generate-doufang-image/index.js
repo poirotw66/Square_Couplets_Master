@@ -5,105 +5,35 @@
  * Can be called directly by agents or users
  */
 
-import { fileURLToPath } from 'url';
 import { dirname, join, resolve } from 'path';
-import { readFileSync, writeFileSync, existsSync, statSync, mkdirSync } from 'fs';
-import { execSync } from 'child_process';
-import { createRequire } from 'module';
+import { writeFileSync, existsSync, mkdirSync } from 'fs';
+import {
+  getProjectRoot,
+  loadEnvironmentVariables,
+  findServicesPath,
+  getApiKey,
+  showVersion,
+  loadReferenceImage,
+  importServiceModule,
+  createProgressSpinner
+} from '../shared/utils.js';
 
-// Resolve project root and service path
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const skillDir = resolve(__dirname);
-const projectRoot = resolve(skillDir, '../..');
-
-// Try to find services directory
-function findServicesPath() {
-  // Get npm global prefix to find globally installed packages
-  let globalPrefix = null;
-  try {
-    globalPrefix = execSync('npm config get prefix', { encoding: 'utf-8' }).trim();
-  } catch (e) {
-    // Ignore error, try other methods
-  }
-  
-  // Try to resolve package location using createRequire (works in ES modules)
-  let packageRoot = null;
-  try {
-    const require = createRequire(import.meta.url);
-    const packageJsonPath = require.resolve('@justin_666/square-couplets-master-skills/package.json');
-    packageRoot = dirname(packageJsonPath);
-  } catch (e) {
-    // Package not found via require.resolve, will try other paths
-  }
-  
-  const possiblePaths = [
-    // Global npm package - dist directory (compiled JS)
-    ...(globalPrefix ? [
-      join(globalPrefix, 'lib', 'node_modules', '@justin_666', 'square-couplets-master-skills', 'dist', 'services'),
-      join(globalPrefix, 'node_modules', '@justin_666', 'square-couplets-master-skills', 'dist', 'services'),
-    ] : []),
-    // From resolved package root - dist directory
-    ...(packageRoot ? [
-      join(packageRoot, 'dist', 'services'),
-      join(packageRoot, 'services'), // fallback to source
-    ] : []),
-    // Local project root - dist directory
-    join(projectRoot, 'dist', 'services'),
-    join(projectRoot, 'services'), // fallback to source
-    // Local node_modules - dist directory
-    join(projectRoot, 'node_modules', '@justin_666', 'square-couplets-master-skills', 'dist', 'services'),
-    // Current working directory - dist directory
-    join(process.cwd(), 'dist', 'services'),
-    join(process.cwd(), 'services'),
-    // Current working directory node_modules
-    join(process.cwd(), 'node_modules', '@justin_666', 'square-couplets-master-skills', 'dist', 'services'),
-  ];
-
-  for (const path of possiblePaths) {
-    try {
-      if (statSync(path).isDirectory()) {
-        return path;
-      }
-    } catch (e) {
-      // Path doesn't exist, try next
-    }
-  }
-  return null;
-}
-
-// Load environment variables helper
-async function loadEnvironmentVariables() {
-  try {
-    const dotenv = await import('dotenv');
-    const envLocalPath = join(projectRoot, '.env.local');
-    const envPath = join(projectRoot, '.env');
-    const cwdEnvLocalPath = join(process.cwd(), '.env.local');
-    const cwdEnvPath = join(process.cwd(), '.env');
-
-    if (existsSync(envLocalPath)) {
-      dotenv.config({ path: envLocalPath });
-    } else if (existsSync(envPath)) {
-      dotenv.config({ path: envPath });
-    } else if (existsSync(cwdEnvLocalPath)) {
-      dotenv.config({ path: cwdEnvLocalPath });
-    } else if (existsSync(cwdEnvPath)) {
-      dotenv.config({ path: cwdEnvPath });
-    } else {
-      dotenv.config();
-    }
-  } catch (e) {
-    // dotenv not available, continue without it (will use environment variables)
-  }
-}
+// Initialize
+const projectRoot = getProjectRoot(import.meta.url);
 
 async function main() {
   try {
+    // Check for version flag
+    if (process.argv.includes('--version') || process.argv.includes('-v')) {
+      showVersion(projectRoot);
+      process.exit(0);
+    }
+
     // Load environment variables first
-    await loadEnvironmentVariables();
+    await loadEnvironmentVariables(projectRoot);
     
     // Parse command line arguments
-    const args = process.argv.slice(2);
+    const args = process.argv.slice(2).filter(arg => !arg.startsWith('-'));
     const prompt = args[0];
     const model = args[1] || 'gemini-2.5-flash-image';
     const imageSize = args[2] || '1K';
@@ -113,17 +43,19 @@ async function main() {
     if (!prompt) {
       console.error('❌ Error: Prompt is required');
       console.log('\nUsage:');
-      console.log('  node skills/generate-doufang-image/index.js <prompt> [model] [size] [reference-image] [output-path]');
+      console.log('  doufang-image <prompt> [model] [size] [reference-image] [output-path]');
       console.log('\nParameters:');
       console.log('  prompt           - Image generation prompt (required)');
       console.log('  model            - Model to use: gemini-2.5-flash-image (default) or gemini-3-pro-image-preview');
       console.log('  size             - Image size: 1K (default), 2K, or 4K (Pro model only)');
       console.log('  reference-image  - Optional reference image path');
       console.log('  output-path      - Optional output file path (default: output/doufang-{timestamp}.png)');
+      console.log('\nOptions:');
+      console.log('  -v, --version    Show version number');
       console.log('\nExample:');
-      console.log('  node skills/generate-doufang-image/index.js "A diamond-shaped Doufang..."');
-      console.log('  node skills/generate-doufang-image/index.js "..." gemini-3-pro-image-preview 2K');
-      console.log('  node skills/generate-doufang-image/index.js "..." gemini-3-pro-image-preview 2K images/ref.png output/my-doufang.png');
+      console.log('  doufang-image "A diamond-shaped Doufang..."');
+      console.log('  doufang-image "..." gemini-3-pro-image-preview 2K');
+      console.log('  doufang-image "..." gemini-3-pro-image-preview 2K images/ref.png output/my-doufang.png');
       process.exit(1);
     }
 
@@ -141,91 +73,60 @@ async function main() {
     }
 
     // Get API key
-    const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY || process.env.GOOGLE_GENAI_API_KEY;
-    
+    const apiKey = getApiKey();
     if (!apiKey) {
       console.error('❌ Error: API Key is missing');
       console.log('💡 Set GEMINI_API_KEY in .env file or environment variable');
       process.exit(1);
     }
 
-    // Try to import service function
-    const servicesPath = findServicesPath();
+    // Find and import service module
+    const servicesPath = findServicesPath(projectRoot);
     if (!servicesPath) {
       console.error('❌ Error: Cannot find services directory');
       console.log('💡 Make sure you are running from the project root or have installed the package');
+      console.log('💡 Set DEBUG_DOUFANG=1 to see detailed path checking');
       process.exit(1);
     }
 
-    // Dynamic import of service (prioritize compiled .js from dist/)
-    let serviceModule;
-    const possibleServicePaths = [
-      // 1. Compiled JS in dist/ (npm package)
-      join(dirname(servicesPath), 'dist', 'services', 'geminiService.js'),
-      // 2. Compiled JS in services/ (if built locally)
-      join(servicesPath, 'geminiService.js'),
-      // 3. Source TS (development only)
-      join(servicesPath, 'geminiService.ts'),
-    ];
-    
-    let importError = null;
-    for (const servicePath of possibleServicePaths) {
-      try {
-        if (existsSync(servicePath)) {
-          serviceModule = await import(`file://${servicePath}`);
-          break;
-        }
-      } catch (e) {
-        importError = e;
-        continue;
-      }
-    }
-    
-    if (!serviceModule) {
-      console.error('❌ Error: Cannot import service module');
-      console.error('   Tried paths:');
-      possibleServicePaths.forEach(p => console.error(`   - ${p}`));
-      if (importError) {
-        console.error('\n   Last error:', importError.message);
-      }
-      console.error('\n💡 This usually means the package was not properly built.');
-      console.error('   Please report this issue at: https://github.com/poirotw66/Square_Couplets_Master/issues');
-      process.exit(1);
-    }
+    const serviceModule = await importServiceModule(servicesPath);
     const { generateDoufangImage } = serviceModule;
 
     // Load reference image if provided
     let referenceImageDataUrl = null;
     if (referenceImagePath) {
-      const fullPath = resolve(process.cwd(), referenceImagePath);
-      if (!existsSync(fullPath)) {
-        console.error(`❌ Error: Reference image not found: ${fullPath}`);
+      try {
+        referenceImageDataUrl = loadReferenceImage(referenceImagePath);
+        console.log(`🖼️  Using reference image: ${referenceImagePath}`);
+      } catch (error) {
+        console.error(`❌ Error: ${error.message}`);
         process.exit(1);
       }
-      
-      const imageBuffer = readFileSync(fullPath);
-      const base64 = imageBuffer.toString('base64');
-      const ext = referenceImagePath.split('.').pop()?.toLowerCase();
-      const mimeType = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : 'image/png';
-      referenceImageDataUrl = `data:${mimeType};base64,${base64}`;
     }
 
-    // Generate image
-    console.log(`🖼️  Generating image...`);
+    // Generate image with progress spinner
+    console.log(`🎨 Generating image...`);
     console.log(`    Model: ${model}`);
     console.log(`    Size: ${imageSize}`);
-    if (referenceImagePath) {
-      console.log(`    Reference: ${referenceImagePath}`);
-    }
-    console.log('    This may take a while, please wait...\n');
+    console.log('');
     
-    const imageDataUrl = await generateDoufangImage(
-      prompt,
-      apiKey,
-      model,
-      imageSize,
-      referenceImageDataUrl
-    );
+    const spinner = createProgressSpinner('Generating image... (this may take 30-60 seconds)');
+    spinner.start();
+    
+    let imageDataUrl;
+    try {
+      imageDataUrl = await generateDoufangImage(
+        prompt,
+        apiKey,
+        model,
+        imageSize,
+        referenceImageDataUrl
+      );
+      spinner.stop('✅ Image generated successfully!');
+    } catch (error) {
+      spinner.stop('');
+      throw error;
+    }
     
     // Extract base64 data
     const base64Data = imageDataUrl.replace(/^data:image\/\w+;base64,/, '');
@@ -252,7 +153,6 @@ async function main() {
     // Save image
     writeFileSync(finalOutputPath, buffer);
     
-    console.log('✅ Image generated successfully!');
     console.log(`📁 Saved to: ${finalOutputPath}`);
     console.log(`📊 File size: ${(buffer.length / 1024 / 1024).toFixed(2)} MB`);
     
@@ -262,7 +162,18 @@ async function main() {
 
   } catch (error) {
     console.error('❌ Error:', error.message);
-    if (error.stack) {
+    if (error.details) {
+      console.error('\nDetails:');
+      if (error.details.triedPaths) {
+        console.error('  Tried paths:');
+        error.details.triedPaths.forEach(p => console.error(`    - ${p}`));
+      }
+      if (error.details.lastError) {
+        console.error(`  Last error: ${error.details.lastError}`);
+      }
+    }
+    if (process.env.DEBUG_DOUFANG && error.stack) {
+      console.error('\nStack trace:');
       console.error(error.stack);
     }
     process.exit(1);
