@@ -90,7 +90,7 @@ Transform the user's keyword into a 4-character Chinese blessing phrase:
 - Custom -> If the user provides a 4-character phrase, use it directly.
 
 ${customizationOptions?.customBlessingPhrase 
-  ? `\nIMPORTANT: The user has specified a custom blessing phrase: 「${customizationOptions.customBlessingPhrase}」. Use this exact phrase unless it's invalid.`
+  ? `\nIMPORTANT: The user has specified a custom blessing phrase: 「${customizationOptions.customBlessingPhrase}」. Use this exact phrase as the calligraphy text. However, still use the keyword to determine the visual theme and decorative elements around the calligraphy.`
   : ''}
 
 ---
@@ -249,7 +249,7 @@ Transform the user's keyword into a 4-character Chinese blessing phrase:
 - Peace/Harmony -> e.g., 平安喜樂, 歲歲平安
 - Love -> e.g., 永結同心, 花好月圓
 ${customizationOptions.customBlessingPhrase 
-  ? `\nIMPORTANT: The user has specified a custom blessing phrase: 「${customizationOptions.customBlessingPhrase}」. Use this exact phrase unless it's invalid.`
+  ? `\nIMPORTANT: The user has specified a custom blessing phrase: 「${customizationOptions.customBlessingPhrase}」. Use this exact phrase as the calligraphy text. However, still use the keyword to determine the visual theme and decorative elements around the calligraphy.`
   : '- Custom -> If the user provides a 4-character phrase, use it directly.'}
 
 ---
@@ -366,6 +366,7 @@ CRITICAL INSTRUCTION: A reference image has been provided above. You MUST analyz
     
     if (customBlessingPhrase && customBlessingPhrase.trim()) {
       prompt += `\n\nUser-specified blessing phrase: 「${customBlessingPhrase.trim()}」`;
+      prompt += `\n\nIMPORTANT: Use the keyword "${userKeyword}" to determine the visual theme and decorative elements (symbols, patterns, motifs). Use the custom blessing phrase "${customBlessingPhrase.trim()}" as the calligraphy text displayed on the Doufang.`;
     }
     
     prompt += `\n\nCustomization preferences (apply these while maintaining reference image style):`;
@@ -422,6 +423,8 @@ The generated prompt MUST explicitly describe:
 - The color palette and visual characteristics to preserve
 
 DO NOT create generic descriptions. Be SPECIFIC about what you see in the reference image and how to recreate it.`;
+  
+  return prompt;
 };
 
 // Simple user input prompt without reference image
@@ -436,6 +439,7 @@ export const getSimpleUserInputPrompt = (
     
     if (customBlessingPhrase && customBlessingPhrase.trim()) {
       prompt += `\n\nUser-specified blessing phrase: 「${customBlessingPhrase.trim()}」`;
+      prompt += `\n\nIMPORTANT: Use the keyword "${userKeyword}" to determine the visual theme and decorative elements (symbols, patterns, motifs). Use the custom blessing phrase "${customBlessingPhrase.trim()}" as the calligraphy text displayed on the Doufang.`;
     }
     
     prompt += `\n\nCustomization preferences:`;

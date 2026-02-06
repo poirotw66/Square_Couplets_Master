@@ -1,5 +1,6 @@
-import React, { memo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { CustomizationOptions, ArtStyle, ColorTheme, CalligraphyStyle, DecorationLevel } from '../types';
+import { OptionGroup } from './OptionGroup';
 
 interface CustomizationPanelProps {
   options: CustomizationOptions;
@@ -7,18 +8,32 @@ interface CustomizationPanelProps {
   disabled?: boolean;
 }
 
-export const CustomizationPanel: React.FC<CustomizationPanelProps> = memo(({ 
+export const CustomizationPanel: React.FC<CustomizationPanelProps> = ({ 
   options, 
   onChange, 
   disabled = false 
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isComposingBlessing, setIsComposingBlessing] = useState(false);
+  const [blessingDraft, setBlessingDraft] = useState(options.customBlessingPhrase ?? '');
+
+  useEffect(() => {
+    if (!isComposingBlessing) {
+      setBlessingDraft(options.customBlessingPhrase ?? '');
+    }
+  }, [isComposingBlessing, options.customBlessingPhrase]);
 
   const updateOption = <K extends keyof CustomizationOptions>(
     key: K,
     value: CustomizationOptions[K]
   ) => {
-    onChange({ ...options, [key]: value });
+    // Create new options object with updated value
+    const newOptions: CustomizationOptions = { 
+      ...options, 
+      [key]: value 
+    };
+    // Call onChange to update parent state
+    onChange(newOptions);
   };
 
   // Expanded art style options
@@ -105,6 +120,10 @@ export const CustomizationPanel: React.FC<CustomizationPanelProps> = memo(({
     onChange(nextOptions);
   };
 
+  const normalizeBlessingPhrase = (value: string): string => {
+    return value.replace(/[^\u4e00-\u9fa5]/g, '').slice(0, 8);
+  };
+
   return (
     <div className="mt-6 relative">
       {/* Toggle Button */}
@@ -144,223 +163,124 @@ export const CustomizationPanel: React.FC<CustomizationPanelProps> = memo(({
 
       {/* Expanded Panel */}
       {isExpanded && (
-        <div className="mt-4 p-6 bg-gradient-to-br from-red-950/50 to-red-900/40 border-2 border-amber-500/20 rounded-xl space-y-6 animate-[fadeIn_0.3s_ease-out]">
+        <div className="mt-4 p-6 bg-gradient-to-br from-red-950/50 to-red-900/40 border-2 border-amber-500/20 rounded-xl space-y-6 animate-[fadeIn_0.3s_ease-out]" style={{ pointerEvents: 'auto' }}>
           {/* Art Style */}
-          <div>
-            <label className="block text-amber-200/80 text-sm font-bold mb-3">
-              藝術風格
-            </label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-3">
-              {artStyleOptions.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => handleOptionClick('artStyle', option.value)}
-                  className={`
-                    relative cursor-pointer border rounded-lg p-3 transition-all duration-300 block text-left w-full
-                    ${options.artStyle === option.value
-                      ? 'bg-amber-900/40 border-amber-500/60 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
-                      : 'bg-black/20 border-amber-900/30 hover:bg-amber-900/20'}
-                    ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                  `}
-                >
-                  <div className="text-center">
-                    <div className="font-medium text-amber-200 text-sm mb-1">{option.label}</div>
-                    <div className="text-xs text-amber-500/60">{option.description}</div>
-                  </div>
-                  {options.artStyle === option.value && (
-                    <div className="absolute top-2 right-2 w-2 h-2 bg-amber-400 rounded-full"></div>
-                  )}
-                </button>
-              ))}
-            </div>
-            {options.artStyle === 'custom' && (
-              <div className="mt-3">
-                <input
-                  type="text"
-                  value={options.customArtStyle || ''}
-                  onChange={(e) => updateOption('customArtStyle', e.target.value || undefined)}
-                  placeholder="例如：水彩畫風格、油畫風格、數位藝術風格..."
-                  disabled={disabled}
-                  maxLength={100}
-                  className="w-full bg-black/40 border border-amber-900/50 rounded-lg px-4 py-3 text-amber-100 placeholder-amber-500/20 focus:outline-none focus:border-amber-500/50 transition-colors text-sm"
-                  onClick={(e) => e.stopPropagation()}
-                />
-                <p className="mt-2 text-xs text-amber-500/40">
-                  請描述您想要的藝術風格
-                </p>
-              </div>
-            )}
-          </div>
+          <OptionGroup
+            title="藝術風格"
+            options={artStyleOptions}
+            selectedValue={options.artStyle}
+            onSelect={(value) => handleOptionClick('artStyle', value)}
+            disabled={disabled}
+            customValue={options.customArtStyle}
+            onCustomValueChange={(value) => updateOption('customArtStyle', value)}
+            customPlaceholder="例如：水彩畫風格、油畫風格、數位藝術風格..."
+            customHelpText="請描述您想要的藝術風格"
+          />
 
           {/* Color Theme */}
-          <div>
-            <label className="block text-amber-200/80 text-sm font-bold mb-3">
-              顏色主題
-            </label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-3">
-              {colorThemeOptions.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => handleOptionClick('colorTheme', option.value)}
-                  className={`
-                    relative cursor-pointer border rounded-lg p-3 transition-all duration-300 block text-left w-full
-                    ${options.colorTheme === option.value
-                      ? 'bg-amber-900/40 border-amber-500/60 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
-                      : 'bg-black/20 border-amber-900/30 hover:bg-amber-900/20'}
-                    ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                  `}
-                >
-                  <div className="text-center">
-                    <div className="font-medium text-amber-200 text-sm mb-1">{option.label}</div>
-                    <div className="text-xs text-amber-500/60">{option.description}</div>
-                  </div>
-                  {options.colorTheme === option.value && (
-                    <div className="absolute top-2 right-2 w-2 h-2 bg-amber-400 rounded-full"></div>
-                  )}
-                </button>
-              ))}
-            </div>
-            {options.colorTheme === 'custom' && (
-              <div className="mt-3">
-                <input
-                  type="text"
-                  value={options.customColorTheme || ''}
-                  onChange={(e) => updateOption('customColorTheme', e.target.value || undefined)}
-                  placeholder="例如：深紫色配金色、綠色配白色、漸層藍紫色..."
-                  disabled={disabled}
-                  maxLength={100}
-                  className="w-full bg-black/40 border border-amber-900/50 rounded-lg px-4 py-3 text-amber-100 placeholder-amber-500/20 focus:outline-none focus:border-amber-500/50 transition-colors text-sm"
-                  onClick={(e) => e.stopPropagation()}
-                />
-                <p className="mt-2 text-xs text-amber-500/40">
-                  請描述您想要的顏色搭配
-                </p>
-              </div>
-            )}
-          </div>
+          <OptionGroup
+            title="顏色主題"
+            options={colorThemeOptions}
+            selectedValue={options.colorTheme}
+            onSelect={(value) => handleOptionClick('colorTheme', value)}
+            disabled={disabled}
+            customValue={options.customColorTheme}
+            onCustomValueChange={(value) => updateOption('customColorTheme', value)}
+            customPlaceholder="例如：深紫色配金色、綠色配白色、漸層藍紫色..."
+            customHelpText="請描述您想要的顏色搭配"
+          />
 
           {/* Calligraphy Style */}
-          <div>
-            <label className="block text-amber-200/80 text-sm font-bold mb-3">
-              書法字體
-            </label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-3">
-              {calligraphyStyleOptions.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => handleOptionClick('calligraphyStyle', option.value)}
-                  className={`
-                    relative cursor-pointer border rounded-lg p-3 transition-all duration-300 block text-left w-full
-                    ${options.calligraphyStyle === option.value
-                      ? 'bg-amber-900/40 border-amber-500/60 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
-                      : 'bg-black/20 border-amber-900/30 hover:bg-amber-900/20'}
-                    ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                  `}
-                >
-                  <div className="text-center">
-                    <div className="font-medium text-amber-200 text-sm mb-1">{option.label}</div>
-                    <div className="text-xs text-amber-500/60">{option.description}</div>
-                  </div>
-                  {options.calligraphyStyle === option.value && (
-                    <div className="absolute top-2 right-2 w-2 h-2 bg-amber-400 rounded-full"></div>
-                  )}
-                </button>
-              ))}
-            </div>
-            {options.calligraphyStyle === 'custom' && (
-              <div className="mt-3">
-                <input
-                  type="text"
-                  value={options.customCalligraphyStyle || ''}
-                  onChange={(e) => updateOption('customCalligraphyStyle', e.target.value || undefined)}
-                  placeholder="例如：仿宋體風格、手寫風格、現代字體風格..."
-                  disabled={disabled}
-                  maxLength={100}
-                  className="w-full bg-black/40 border border-amber-900/50 rounded-lg px-4 py-3 text-amber-100 placeholder-amber-500/20 focus:outline-none focus:border-amber-500/50 transition-colors text-sm"
-                  onClick={(e) => e.stopPropagation()}
-                />
-                <p className="mt-2 text-xs text-amber-500/40">
-                  請描述您想要的字體風格
-                </p>
-              </div>
-            )}
-          </div>
+          <OptionGroup
+            title="書法字體"
+            options={calligraphyStyleOptions}
+            selectedValue={options.calligraphyStyle}
+            onSelect={(value) => handleOptionClick('calligraphyStyle', value)}
+            disabled={disabled}
+            customValue={options.customCalligraphyStyle}
+            onCustomValueChange={(value) => updateOption('customCalligraphyStyle', value)}
+            customPlaceholder="例如：仿宋體風格、手寫風格、現代字體風格..."
+            customHelpText="請描述您想要的字體風格"
+          />
 
           {/* Decoration Level */}
-          <div>
-            <label className="block text-amber-200/80 text-sm font-bold mb-3">
-              裝飾程度
-            </label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-3">
-              {decorationLevelOptions.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => handleOptionClick('decorationLevel', option.value)}
-                  className={`
-                    relative cursor-pointer border rounded-lg p-3 transition-all duration-300 text-center block w-full
-                    ${options.decorationLevel === option.value
-                      ? 'bg-amber-900/40 border-amber-500/60 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
-                      : 'bg-black/20 border-amber-900/30 hover:bg-amber-900/20'}
-                    ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                  `}
-                >
-                  <div className="font-medium text-amber-200 text-sm mb-1">{option.label}</div>
-                  <div className="text-xs text-amber-500/60">{option.description}</div>
-                  {options.decorationLevel === option.value && (
-                    <div className="absolute top-2 right-2 w-2 h-2 bg-amber-400 rounded-full"></div>
-                  )}
-                </button>
-              ))}
-            </div>
-            {options.decorationLevel === 'custom' && (
-              <div className="mt-3">
-                <input
-                  type="text"
-                  value={options.customDecorationLevel || ''}
-                  onChange={(e) => updateOption('customDecorationLevel', e.target.value || undefined)}
-                  placeholder="例如：僅有邊框裝飾、大量花卉圖案、幾何圖形裝飾..."
-                  disabled={disabled}
-                  maxLength={100}
-                  className="w-full bg-black/40 border border-amber-900/50 rounded-lg px-4 py-3 text-amber-100 placeholder-amber-500/20 focus:outline-none focus:border-amber-500/50 transition-colors text-sm"
-                  onClick={(e) => e.stopPropagation()}
-                />
-                <p className="mt-2 text-xs text-amber-500/40">
-                  請描述您想要的裝飾風格和程度
-                </p>
-              </div>
-            )}
-          </div>
+          <OptionGroup
+            title="裝飾程度"
+            options={decorationLevelOptions}
+            selectedValue={options.decorationLevel}
+            onSelect={(value) => handleOptionClick('decorationLevel', value)}
+            disabled={disabled}
+            customValue={options.customDecorationLevel}
+            onCustomValueChange={(value) => updateOption('customDecorationLevel', value)}
+            customPlaceholder="例如：僅有邊框裝飾、大量花卉圖案、幾何圖形裝飾..."
+            customHelpText="請描述您想要的裝飾風格和程度"
+            gridCols="3"
+          />
 
           {/* Custom Blessing Phrase (Optional) */}
           <div>
-            <label className="block text-amber-200/80 text-sm font-bold mb-3">
+            <label 
+              htmlFor="custom-blessing-phrase"
+              className="block text-amber-200/80 text-sm font-bold mb-3"
+            >
               自訂祝福語（選填）
             </label>
             <input
+              id="custom-blessing-phrase"
               type="text"
-              value={options.customBlessingPhrase || ''}
-              onChange={(e) => updateOption('customBlessingPhrase', e.target.value || undefined)}
+              value={blessingDraft}
+              onChange={(e) => {
+                const inputValue = e.target.value;
+                setBlessingDraft(inputValue);
+                if (isComposingBlessing) {
+                  return;
+                }
+                const filteredValue = normalizeBlessingPhrase(inputValue);
+                setBlessingDraft(filteredValue);
+                updateOption('customBlessingPhrase', filteredValue.length > 0 ? filteredValue : undefined);
+              }}
+              onCompositionStart={() => setIsComposingBlessing(true)}
+              onCompositionEnd={(e) => {
+                setIsComposingBlessing(false);
+                const filteredValue = normalizeBlessingPhrase(e.currentTarget.value);
+                setBlessingDraft(filteredValue);
+                updateOption('customBlessingPhrase', filteredValue.length > 0 ? filteredValue : undefined);
+              }}
+              onBlur={(e) => {
+                const filteredValue = normalizeBlessingPhrase(e.currentTarget.value);
+                setBlessingDraft(filteredValue);
+                updateOption('customBlessingPhrase', filteredValue.length > 0 ? filteredValue : undefined);
+              }}
               placeholder="例如：萬事如意（留空則自動生成）"
               disabled={disabled}
               maxLength={8}
+              aria-label="自訂祝福語輸入"
+              aria-describedby="blessing-phrase-help"
               className="w-full bg-black/40 border border-amber-900/50 rounded-lg px-4 py-3 text-amber-100 placeholder-amber-500/20 focus:outline-none focus:border-amber-500/50 transition-colors text-sm"
             />
-            <p className="mt-2 text-xs text-amber-500/40">
-              可輸入 4-8 個中文字作為祝福語，留空則由 AI 自動生成
-            </p>
+            <div id="blessing-phrase-help" className="mt-2 space-y-1">
+              <p className="text-xs text-amber-500/40">
+                可輸入 4-8 個中文字作為祝福語，留空則由 AI 自動生成
+              </p>
+              <p className="text-xs text-amber-500/50 italic">
+                💡 提示：上方輸入框決定主題和視覺元素，此處決定顯示的文字。建議兩者主題一致以獲得最佳效果。
+              </p>
+              {options.customBlessingPhrase && options.customBlessingPhrase.length > 0 && options.customBlessingPhrase.length < 4 && (
+                <p className="text-xs text-amber-400/70 mt-1">
+                  💡 建議輸入 4-8 個中文字以獲得最佳效果
+                </p>
+              )}
+              {options.customBlessingPhrase && options.customBlessingPhrase.length > 0 && !/^[\u4e00-\u9fa5]+$/.test(options.customBlessingPhrase) && (
+                <p className="text-xs text-red-400/70 mt-1">
+                  ⚠️ 請只輸入中文字
+                </p>
+              )}
+            </div>
           </div>
         </div>
       )}
     </div>
   );
-});
+};
 
 CustomizationPanel.displayName = 'CustomizationPanel';

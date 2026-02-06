@@ -29,8 +29,8 @@ const App: React.FC = () => {
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [referenceImageFile, setReferenceImageFile] = useState<File | null>(null);
   
-  // Customization Options State
-  const [customizationOptions, setCustomizationOptions] = useState<CustomizationOptions>({
+  // Customization Options State with localStorage persistence
+  const [customizationOptions, setCustomizationOptions] = useLocalStorage<CustomizationOptions>('customization-options', {
     artStyle: 'traditional',
     colorTheme: 'classic-red-gold',
     calligraphyStyle: 'kaishu',

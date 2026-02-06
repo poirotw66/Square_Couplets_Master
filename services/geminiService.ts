@@ -52,7 +52,7 @@ export const generateDoufangPrompt = async (
     // Add reference image if provided - image should come first
     if (referenceImageDataUrl) {
       const imageData = processImageDataUrl(referenceImageDataUrl);
-      if (imageData) {
+      if (imageData && imageData.base64Data && imageData.mimeType) {
         parts.push({
           inlineData: {
             mimeType: imageData.mimeType,
@@ -61,24 +61,59 @@ export const generateDoufangPrompt = async (
         });
       } else {
         // Fallback: try to use as-is (may fail, but attempt anyway)
-        console.warn('Reference image format may be incorrect, attempting to use as-is');
-        parts.push({
-          inlineData: {
-            mimeType: 'image/jpeg', // Default to JPEG
-            data: referenceImageDataUrl.replace(/^data:image\/[^;]+;base64,/, '')
-          }
-        });
+        const base64Data = referenceImageDataUrl.replace(/^data:image\/[^;]+;base64,/, '');
+        if (base64Data && base64Data.length > 0) {
+          console.warn('Reference image format may be incorrect, attempting to use as-is');
+          parts.push({
+            inlineData: {
+              mimeType: 'image/jpeg', // Default to JPEG
+              data: base64Data
+            }
+          });
+        } else {
+          // If image processing fails completely, skip the image and use text-only
+          console.warn('Failed to process reference image, proceeding without image');
+        }
       }
       
       // Add text instruction with reference image context and customization
-      parts.push({ 
-        text: getReferenceImageAnalysisPrompt(userKeyword, customizationOptions)
-      });
+      const textPrompt = getReferenceImageAnalysisPrompt(userKeyword, customizationOptions);
+      if (textPrompt && textPrompt.trim()) {
+        parts.push({ 
+          text: textPrompt.trim()
+        });
+      } else {
+        throw new Error('Failed to generate prompt text');
+      }
     } else {
       // No reference image, use simple text with customization
-      parts.push({ 
-        text: getSimpleUserInputPrompt(userKeyword, customizationOptions) 
-      });
+      const textPrompt = getSimpleUserInputPrompt(userKeyword, customizationOptions);
+      if (textPrompt && textPrompt.trim()) {
+        parts.push({ 
+          text: textPrompt.trim()
+        });
+      } else {
+        throw new Error('Failed to generate prompt text');
+      }
+    }
+    
+    // Validate parts array is not empty
+    if (parts.length === 0) {
+      throw new Error('No valid content parts to send to API');
+    }
+    
+    // Validate that all parts have required fields
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+      if (!part.text && !part.inlineData) {
+        throw new Error(`Part ${i} is missing both text and inlineData`);
+      }
+      if (part.inlineData && (!part.inlineData.data || !part.inlineData.mimeType)) {
+        throw new Error(`Part ${i} inlineData is missing data or mimeType`);
+      }
+      if (part.text && !part.text.trim()) {
+        throw new Error(`Part ${i} text is empty`);
+      }
     }
     
     // Get system instruction based on whether reference image is provided and customization options
