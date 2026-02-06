@@ -70,7 +70,9 @@ Return a JSON object with the following structure:
 }
 `;
 
-export const getDoufangSystemPromptWithReference = (): string => {
+export const getDoufangSystemPromptWithReference = (
+  customizationOptions?: import('./types').CustomizationOptions
+): string => {
   return `You are a professional Chinese New Year Doufang (diamond-shaped couplet) designer and calligrapher.
 
 ### CORE MISSION:
@@ -86,6 +88,10 @@ Transform the user's keyword into a 4-character Chinese blessing phrase:
 - Peace/Harmony -> e.g., 平安喜樂, 歲歲平安
 - Love -> e.g., 永結同心, 花好月圓
 - Custom -> If the user provides a 4-character phrase, use it directly.
+
+${customizationOptions?.customBlessingPhrase 
+  ? `\nIMPORTANT: The user has specified a custom blessing phrase: 「${customizationOptions.customBlessingPhrase}」. Use this exact phrase unless it's invalid.`
+  : ''}
 
 ---
 
@@ -129,6 +135,44 @@ The reference image is **NOT** to be copied, replicated, traced, or minimally mo
 - **Background**: Traditional deep vermilion or "Wanshou" red Xuan paper, but infused with textures or visual language from the reference image.
 - **Calligraphy Layout**: The 4-character blessing MUST be arranged in a **balanced 2x2 square grid** at the center.
 - **Integration**: The subject inspired by the reference image should interact with the calligraphy (e.g., surrounding it, weaving through strokes, carved as relief, or forming a majestic backdrop).
+
+${customizationOptions ? `
+### CUSTOMIZATION REQUIREMENTS:
+- **Art Style**: ${customizationOptions.artStyle === 'custom' && customizationOptions.customArtStyle
+  ? customizationOptions.customArtStyle
+  : customizationOptions.artStyle === 'traditional' ? 'Traditional Chinese ink wash painting style' : 
+    customizationOptions.artStyle === 'modern' ? 'Modern design elements fused with traditional aesthetics' :
+    customizationOptions.artStyle === 'minimalist' ? 'Minimalist and elegant design with clean lines' :
+    customizationOptions.artStyle === 'luxurious' ? 'Luxurious and ornate design with rich decorative details' :
+    customizationOptions.artStyle === 'vintage' ? 'Vintage retro design style' :
+    customizationOptions.artStyle === 'contemporary' ? 'Contemporary art style' :
+    customizationOptions.artStyle === 'abstract' ? 'Abstract art expression' :
+    customizationOptions.artStyle === 'realistic' ? 'Realistic style' : customizationOptions.artStyle}
+- **Color Theme**: ${customizationOptions.colorTheme === 'custom' && customizationOptions.customColorTheme
+  ? customizationOptions.customColorTheme
+  : customizationOptions.colorTheme === 'classic-red-gold' ? 'Classic red and gold color scheme' :
+    customizationOptions.colorTheme === 'elegant-subtle' ? 'Elegant and subtle color palette with soft tones' :
+    customizationOptions.colorTheme === 'vibrant-rich' ? 'Vibrant and rich colors with high saturation' :
+    customizationOptions.colorTheme === 'monochrome' ? 'Monochrome black and white or grayscale palette' :
+    customizationOptions.colorTheme === 'pastel-soft' ? 'Pastel soft color tones' :
+    customizationOptions.colorTheme === 'deep-mysterious' ? 'Deep mysterious color tones' :
+    customizationOptions.colorTheme === 'warm-earth' ? 'Warm earth tone color scheme' :
+    customizationOptions.colorTheme === 'cool-blue' ? 'Cool blue tone color scheme' : customizationOptions.colorTheme}
+- **Calligraphy Style**: ${customizationOptions.calligraphyStyle === 'custom' && customizationOptions.customCalligraphyStyle
+  ? customizationOptions.customCalligraphyStyle
+  : customizationOptions.calligraphyStyle === 'kaishu' ? 'Kaishu (Regular Script) - formal and upright' :
+    customizationOptions.calligraphyStyle === 'xingshu' ? 'Xingshu (Running Script) - flowing and elegant' :
+    customizationOptions.calligraphyStyle === 'caoshu' ? 'Caoshu (Cursive Script) - bold and expressive' :
+    customizationOptions.calligraphyStyle === 'lishu' ? 'Lishu (Clerical Script) - ancient and dignified' :
+    customizationOptions.calligraphyStyle === 'zhuanshu' ? 'Zhuanshu (Seal Script) - ancient and elegant' :
+    customizationOptions.calligraphyStyle === 'weibei' ? 'Weibei - strong and powerful' : customizationOptions.calligraphyStyle}
+- **Decoration Level**: ${customizationOptions.decorationLevel === 'custom' && customizationOptions.customDecorationLevel
+  ? customizationOptions.customDecorationLevel
+  : customizationOptions.decorationLevel === 'minimal' ? 'Minimal decorative elements, focus on calligraphy' :
+    customizationOptions.decorationLevel === 'moderate' ? 'Balanced decorative elements and calligraphy' :
+    customizationOptions.decorationLevel === 'rich' ? 'Rich decorative elements with intricate details surrounding the calligraphy' :
+    customizationOptions.decorationLevel === 'extravagant' ? 'Extravagant decorative elements with elaborate details' : customizationOptions.decorationLevel}
+` : ''}
 
 ---
 
@@ -186,12 +230,167 @@ Return only a JSON object:
 `;
 };
 
+// System prompt with customization options (no reference image)
+export const getDoufangSystemPromptWithCustomization = (
+  customizationOptions: import('./types').CustomizationOptions
+): string => {
+  return `You are a professional Chinese New Year Doufang (diamond-shaped couplet) designer and calligrapher.
+
+### CORE MISSION:
+Your task is to generate a high-end, printable Chinese New Year "Doufang" (diamond-shaped) couplet artwork based on the user's keyword and customization preferences.
+
+---
+
+### STEP 1: KEYWORD & BLESSING LOGIC
+Transform the user's keyword into a 4-character Chinese blessing phrase:
+- Wealth -> e.g., 招財進寶, 富貴吉祥
+- Health -> e.g., 龍馬精神, 延年益壽
+- Career/Success -> e.g., 大展宏圖, 步步高升
+- Peace/Harmony -> e.g., 平安喜樂, 歲歲平安
+- Love -> e.g., 永結同心, 花好月圓
+${customizationOptions.customBlessingPhrase 
+  ? `\nIMPORTANT: The user has specified a custom blessing phrase: 「${customizationOptions.customBlessingPhrase}」. Use this exact phrase unless it's invalid.`
+  : '- Custom -> If the user provides a 4-character phrase, use it directly.'}
+
+---
+
+### STEP 2: ARTWORK SPECIFICATIONS (DOUFANG FORMAT)
+- **Shape**: A perfect diamond-shaped (rotated square) "Doufang".
+- **Background**: Traditional deep vermilion or "Wanshou" red Xuan paper.
+- **Calligraphy Layout**: The 4-character blessing MUST be arranged in a **balanced 2x2 square grid** at the center.
+
+### CUSTOMIZATION REQUIREMENTS:
+- **Art Style**: ${customizationOptions.artStyle === 'custom' && customizationOptions.customArtStyle
+  ? customizationOptions.customArtStyle
+  : customizationOptions.artStyle === 'traditional' ? 'Traditional Chinese ink wash painting style with classic techniques' : 
+    customizationOptions.artStyle === 'modern' ? 'Modern design elements fused with traditional aesthetics, contemporary composition' :
+    customizationOptions.artStyle === 'minimalist' ? 'Minimalist and elegant design with clean lines, simple yet sophisticated' :
+    customizationOptions.artStyle === 'luxurious' ? 'Luxurious and ornate design with rich decorative details, elaborate patterns' :
+    customizationOptions.artStyle === 'vintage' ? 'Vintage retro design style with nostalgic elements' :
+    customizationOptions.artStyle === 'contemporary' ? 'Contemporary art style with modern aesthetics' :
+    customizationOptions.artStyle === 'abstract' ? 'Abstract art expression with creative forms' :
+    customizationOptions.artStyle === 'realistic' ? 'Realistic style with detailed representation' : customizationOptions.artStyle}
+- **Color Theme**: ${customizationOptions.colorTheme === 'custom' && customizationOptions.customColorTheme
+  ? customizationOptions.customColorTheme
+  : customizationOptions.colorTheme === 'classic-red-gold' ? 'Classic red and gold color scheme, traditional festive colors' :
+    customizationOptions.colorTheme === 'elegant-subtle' ? 'Elegant and subtle color palette with soft tones, refined and gentle' :
+    customizationOptions.colorTheme === 'vibrant-rich' ? 'Vibrant and rich colors with high saturation, bold and energetic' :
+    customizationOptions.colorTheme === 'monochrome' ? 'Monochrome black and white or grayscale palette, sophisticated and timeless' :
+    customizationOptions.colorTheme === 'pastel-soft' ? 'Pastel soft color tones, gentle and dreamy' :
+    customizationOptions.colorTheme === 'deep-mysterious' ? 'Deep mysterious color tones, enigmatic and profound' :
+    customizationOptions.colorTheme === 'warm-earth' ? 'Warm earth tone color scheme, natural and cozy' :
+    customizationOptions.colorTheme === 'cool-blue' ? 'Cool blue tone color scheme, calm and serene' : customizationOptions.colorTheme}
+- **Calligraphy Style**: ${customizationOptions.calligraphyStyle === 'custom' && customizationOptions.customCalligraphyStyle
+  ? customizationOptions.customCalligraphyStyle
+  : customizationOptions.calligraphyStyle === 'kaishu' ? 'Kaishu (Regular Script) - formal, upright, and clear strokes' :
+    customizationOptions.calligraphyStyle === 'xingshu' ? 'Xingshu (Running Script) - flowing, elegant, and dynamic strokes' :
+    customizationOptions.calligraphyStyle === 'caoshu' ? 'Caoshu (Cursive Script) - bold, expressive, and artistic strokes' :
+    customizationOptions.calligraphyStyle === 'lishu' ? 'Lishu (Clerical Script) - ancient, dignified, and structured strokes' :
+    customizationOptions.calligraphyStyle === 'zhuanshu' ? 'Zhuanshu (Seal Script) - ancient and elegant seal script style' :
+    customizationOptions.calligraphyStyle === 'weibei' ? 'Weibei - strong and powerful Wei stele style' : customizationOptions.calligraphyStyle}
+- **Decoration Level**: ${customizationOptions.decorationLevel === 'custom' && customizationOptions.customDecorationLevel
+  ? customizationOptions.customDecorationLevel
+  : customizationOptions.decorationLevel === 'minimal' ? 'Minimal decorative elements, focus primarily on calligraphy with subtle background patterns' :
+    customizationOptions.decorationLevel === 'moderate' ? 'Balanced decorative elements and calligraphy, harmonious composition' :
+    customizationOptions.decorationLevel === 'rich' ? 'Rich decorative elements with intricate details, elaborate patterns, symbols, and motifs surrounding the calligraphy' :
+    customizationOptions.decorationLevel === 'extravagant' ? 'Extravagant decorative elements with extremely elaborate details and luxurious patterns' : customizationOptions.decorationLevel}
+
+---
+
+### STEP 3: PROMPT CONSTRUCTION GUIDELINES
+Your generated "imagePrompt" must incorporate all customization preferences while maintaining the Doufang format:
+- **Style**: Apply the specified art style throughout the artwork
+- **Colors**: Use the specified color theme consistently
+- **Calligraphy**: Render the blessing phrase in the specified calligraphy style
+- **Decoration**: Include decorative elements according to the specified decoration level
+- **Materiality**: Real Xuan paper texture, gold flecks (if applicable), visible paper fibers, natural ink diffusion
+- **Lighting**: Soft studio lighting, gentle glow on gold details, museum-quality artwork
+
+---
+
+### FINAL OUTPUT CONSTRAINTS:
+1. **Framing**:
+   - The entire diamond Doufang must be fully contained within the 1:1 frame.
+   - Minimal, elegant margins - just enough to prevent edge cropping (approximately 2-5% of frame width).
+   - The Doufang should fill most of the frame (90 - 95% of the image area).
+   - No cropping, no touching edges, no cut-off.
+2. **Text Quality**:
+   - Calligraphy must be clear, professional, and correctly written in the specified style.
+   - No distorted strokes, no typos.
+3. **No Modern Junk**:
+   - No UI elements, no watermarks, no photography credits, no signatures.
+
+---
+
+Composition: 
+The diamond-shaped Doufang fills the majority of the 1:1 frame, centered with minimal elegant margins (just enough to prevent edge cropping, approximately 2-5% of frame width).
+The entire artwork is fully visible inside the frame, not touching any edge, not cropped, not cut off.
+The Doufang should occupy 90 - 95% of the image area, maximizing visual impact.
+Clean background, symmetrical, perfectly framed, suitable for printing and hanging on wall.
+
+Quality: ultra high detail, 8k, masterpiece, professional artwork, 1:1 aspect ratio.
+
+Framing requirements:
+- The entire diamond-shaped Doufang must be fully visible inside the image.
+- No part of the artwork is cut off, cropped, out of frame, or touching the image borders.
+- Minimal margins - the Doufang should fill most of the frame (90 - 95% of image area).
+
+Text requirements:
+- The Chinese characters must be clear, correct, readable.
+- No typo, no deformed text.
+- No modern elements, no western style, no watermark.
+
+---
+
+### OUTPUT FORMAT (JSON ONLY):
+Return only a JSON object:
+{
+  "blessingPhrase": "The chosen 4-character phrase${customizationOptions.customBlessingPhrase ? ' (or user-specified phrase)' : ''}",
+  "imagePrompt": "A highly detailed, around 200-word English prompt that incorporates all customization preferences. Focus on the specified art style, color theme, calligraphy style, decoration level, textures, lighting, 2x2 text layout, and centering."
+}
+`;
+};
+
 
 // User input prompt template for reference image analysis
-export const getReferenceImageAnalysisPrompt = (userKeyword: string): string => {
-  return `User input keyword: 「${userKeyword}」
+export const getReferenceImageAnalysisPrompt = (
+  userKeyword: string,
+  customizationOptions?: import('./types').CustomizationOptions
+): string => {
+  let prompt = `User input keyword: 「${userKeyword}」
 
-CRITICAL INSTRUCTION: A reference image has been provided above. You MUST analyze this reference image in detail and generate a prompt that DIRECTLY USES the reference image's visual content, patterns, and style.
+CRITICAL INSTRUCTION: A reference image has been provided above. You MUST analyze this reference image in detail and generate a prompt that DIRECTLY USES the reference image's visual content, patterns, and style.`;
+  
+  if (customizationOptions) {
+    const { customBlessingPhrase, artStyle, colorTheme, calligraphyStyle, decorationLevel } = customizationOptions;
+    
+    if (customBlessingPhrase && customBlessingPhrase.trim()) {
+      prompt += `\n\nUser-specified blessing phrase: 「${customBlessingPhrase.trim()}」`;
+    }
+    
+    prompt += `\n\nCustomization preferences (apply these while maintaining reference image style):`;
+    
+    // Handle custom values
+    const artStyleDesc = artStyle === 'custom' && customizationOptions.customArtStyle
+      ? customizationOptions.customArtStyle
+      : artStyle;
+    const colorThemeDesc = colorTheme === 'custom' && customizationOptions.customColorTheme
+      ? customizationOptions.customColorTheme
+      : colorTheme;
+    const calligraphyStyleDesc = calligraphyStyle === 'custom' && customizationOptions.customCalligraphyStyle
+      ? customizationOptions.customCalligraphyStyle
+      : calligraphyStyle;
+    const decorationLevelDesc = decorationLevel === 'custom' && customizationOptions.customDecorationLevel
+      ? customizationOptions.customDecorationLevel
+      : decorationLevel;
+    
+    prompt += `\n- Art Style: ${artStyleDesc}`;
+    prompt += `\n- Color Theme: ${colorThemeDesc}`;
+    prompt += `\n- Calligraphy Style: ${calligraphyStyleDesc}`;
+    prompt += `\n- Decoration Level: ${decorationLevelDesc}`;
+  }
+  
+  prompt += `
 
 STEP-BY-STEP ANALYSIS REQUIRED:
 1. FIRST, describe what you see in the reference image:
@@ -226,8 +425,42 @@ DO NOT create generic descriptions. Be SPECIFIC about what you see in the refere
 };
 
 // Simple user input prompt without reference image
-export const getSimpleUserInputPrompt = (userKeyword: string): string => {
-  return `User input keyword: 「${userKeyword}」`;
+export const getSimpleUserInputPrompt = (
+  userKeyword: string, 
+  customizationOptions?: import('./types').CustomizationOptions
+): string => {
+  let prompt = `User input keyword: 「${userKeyword}」`;
+  
+  if (customizationOptions) {
+    const { customBlessingPhrase, artStyle, colorTheme, calligraphyStyle, decorationLevel } = customizationOptions;
+    
+    if (customBlessingPhrase && customBlessingPhrase.trim()) {
+      prompt += `\n\nUser-specified blessing phrase: 「${customBlessingPhrase.trim()}」`;
+    }
+    
+    prompt += `\n\nCustomization preferences:`;
+    
+    // Handle custom values
+    const artStyleDesc = artStyle === 'custom' && customizationOptions.customArtStyle
+      ? customizationOptions.customArtStyle
+      : artStyle;
+    const colorThemeDesc = colorTheme === 'custom' && customizationOptions.customColorTheme
+      ? customizationOptions.customColorTheme
+      : colorTheme;
+    const calligraphyStyleDesc = calligraphyStyle === 'custom' && customizationOptions.customCalligraphyStyle
+      ? customizationOptions.customCalligraphyStyle
+      : calligraphyStyle;
+    const decorationLevelDesc = decorationLevel === 'custom' && customizationOptions.customDecorationLevel
+      ? customizationOptions.customDecorationLevel
+      : decorationLevel;
+    
+    prompt += `\n- Art Style: ${artStyleDesc}`;
+    prompt += `\n- Color Theme: ${colorThemeDesc}`;
+    prompt += `\n- Calligraphy Style: ${calligraphyStyleDesc}`;
+    prompt += `\n- Decoration Level: ${decorationLevelDesc}`;
+  }
+  
+  return prompt;
 };
 
 // Image generation prompt enhancement when reference image is provided

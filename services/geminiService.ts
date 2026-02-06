@@ -4,12 +4,13 @@ import {
   getDoufangSystemPromptWithReference,
   getReferenceImageAnalysisPrompt,
   getSimpleUserInputPrompt,
-  getImageGenerationPromptWithReference
+  getImageGenerationPromptWithReference,
+  getDoufangSystemPromptWithCustomization
 } from "../constants";
 import { processImageDataUrl } from "../utils/imageUtils.node";
 import { handleApiError } from "../utils/errorHandler";
 import { retryWithBackoff } from "../utils/retry";
-import type { GeminiContentPart } from "../types";
+import type { GeminiContentPart, CustomizationOptions } from "../types";
 
 const getClient = (apiKey?: string) => {
   // Use user-provided key if available, otherwise fallback to env var
@@ -33,6 +34,7 @@ export const generateDoufangPrompt = async (
   userKeyword: string, 
   apiKey?: string, 
   referenceImageDataUrl?: string | null,
+  customizationOptions?: CustomizationOptions,
   signal?: AbortSignal
 ): Promise<{ blessingPhrase: string; imagePrompt: string }> => {
   return retryWithBackoff(async () => {
@@ -68,19 +70,23 @@ export const generateDoufangPrompt = async (
         });
       }
       
-      // Add text instruction with reference image context
+      // Add text instruction with reference image context and customization
       parts.push({ 
-        text: getReferenceImageAnalysisPrompt(userKeyword)
+        text: getReferenceImageAnalysisPrompt(userKeyword, customizationOptions)
       });
     } else {
-      // No reference image, use simple text
-      parts.push({ text: getSimpleUserInputPrompt(userKeyword) });
+      // No reference image, use simple text with customization
+      parts.push({ 
+        text: getSimpleUserInputPrompt(userKeyword, customizationOptions) 
+      });
     }
     
-    // Get system instruction based on whether reference image is provided
+    // Get system instruction based on whether reference image is provided and customization options
     const systemInstruction = referenceImageDataUrl 
-      ? getDoufangSystemPromptWithReference()
-      : DOUFANG_SYSTEM_PROMPT;
+      ? getDoufangSystemPromptWithReference(customizationOptions)
+      : (customizationOptions 
+        ? getDoufangSystemPromptWithCustomization(customizationOptions)
+        : DOUFANG_SYSTEM_PROMPT);
     
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',

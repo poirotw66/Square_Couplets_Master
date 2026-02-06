@@ -61,8 +61,16 @@ export const compressImage = async (
           return;
         }
         
+        // Optimize canvas rendering
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        
         // Draw image with new dimensions
         ctx.drawImage(img, 0, 0, width, height);
+        
+        // Determine output format based on original file type
+        const outputFormat = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+        const outputQuality = outputFormat === 'image/png' ? undefined : IMAGE_CONSTANTS.COMPRESSION_QUALITY;
         
         // Convert to blob with quality compression
         canvas.toBlob(
@@ -102,8 +110,8 @@ export const compressImage = async (
               );
             }
           },
-          'image/jpeg',
-          IMAGE_CONSTANTS.COMPRESSION_QUALITY // Initial quality
+          outputFormat,
+          outputQuality // Initial quality (undefined for PNG)
         );
       };
       img.onerror = () => reject(new Error('Failed to load image'));

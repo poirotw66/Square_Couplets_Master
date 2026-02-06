@@ -1,4 +1,5 @@
 import React, { useEffect, useState, memo, useCallback } from 'react';
+import type { ImageModel, ImageSize } from '../types';
 
 declare global {
   interface AIStudio {
@@ -12,10 +13,10 @@ interface SettingsModalProps {
   onClose: () => void;
   apiKey: string;
   setApiKey: (key: string) => void;
-  imageModel: string;
-  setImageModel: (model: string) => void;
-  imageSize: '1K' | '2K' | '4K';
-  setImageSize: (size: '1K' | '2K' | '4K') => void;
+  imageModel: ImageModel;
+  setImageModel: (model: ImageModel) => void;
+  imageSize: ImageSize;
+  setImageSize: (size: ImageSize) => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = memo(({
@@ -205,7 +206,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = memo(({
               Image Output Size
             </label>
             <div className="grid grid-cols-3 gap-3">
-              {(['1K', '2K', '4K'] as const).map((size) => {
+              {(['1K', '2K', '4K'] as ImageSize[]).map((size) => {
                 // Flash model may only support 1K, show warning for higher resolutions
                 const isFlashModel = imageModel === 'gemini-2.5-flash-image';
                 const isUnsupported = isFlashModel && size !== '1K';
@@ -227,7 +228,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = memo(({
                       name="imageSize"
                       value={size}
                       checked={imageSize === size}
-                      onChange={(e) => setImageSize(e.target.value as '1K' | '2K' | '4K')}
+                      onChange={(e) => setImageSize(e.target.value as ImageSize)}
                       className="sr-only"
                       disabled={isUnsupported}
                     />

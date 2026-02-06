@@ -1,10 +1,11 @@
-import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Header } from './components/Header';
 import { PromptDisplay } from './components/PromptDisplay';
 import { ImageResult } from './components/ImageResult';
 import { SettingsModal } from './components/SettingsModal';
+import { CustomizationPanel } from './components/CustomizationPanel';
 import { generateDoufangPrompt, generateDoufangImage } from './services/geminiService';
-import { GenerationStatus, type GenerationResultData, type AppSettings } from './types';
+import { GenerationStatus, type GenerationResultData, type AppSettings, type ImageModel, type ImageSize, type CustomizationOptions } from './types';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { compressImage, validateImageFile } from './utils/imageUtils';
 import { AppError, getUserFriendlyErrorMessage } from './utils/errorHandler';
@@ -28,17 +29,30 @@ const App: React.FC = () => {
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [referenceImageFile, setReferenceImageFile] = useState<File | null>(null);
   
-  // Memoized settings getters
-  const apiKey = useMemo(() => settings.apiKey, [settings.apiKey]);
-  const imageModel = useMemo(() => settings.imageModel, [settings.imageModel]);
-  const imageSize = useMemo(() => settings.imageSize, [settings.imageSize]);
+  // Customization Options State
+  const [customizationOptions, setCustomizationOptions] = useState<CustomizationOptions>({
+    artStyle: 'traditional',
+    colorTheme: 'classic-red-gold',
+    calligraphyStyle: 'kaishu',
+    decorationLevel: 'moderate',
+    customBlessingPhrase: undefined,
+    customArtStyle: undefined,
+    customColorTheme: undefined,
+    customCalligraphyStyle: undefined,
+    customDecorationLevel: undefined
+  });
   
-  // Settings setters
+  // Direct access to settings (no need for memoization on simple property access)
+  const apiKey = settings.apiKey;
+  const imageModel = settings.imageModel;
+  const imageSize = settings.imageSize;
+  
+  // Settings setters - useCallback with stable dependencies
   const setApiKey = useCallback((key: string) => {
     setSettings(prev => ({ ...prev, apiKey: key }));
   }, [setSettings]);
   
-  const setImageModel = useCallback((model: 'gemini-2.5-flash-image' | 'gemini-3-pro-image-preview') => {
+  const setImageModel = useCallback((model: ImageModel) => {
     setSettings(prev => {
       const newSettings = { ...prev, imageModel: model };
       // Auto-reset to 1K if switching to Flash model
@@ -49,7 +63,7 @@ const App: React.FC = () => {
     });
   }, [setSettings]);
   
-  const setImageSize = useCallback((size: '1K' | '2K' | '4K') => {
+  const setImageSize = useCallback((size: ImageSize) => {
     setSettings(prev => ({ ...prev, imageSize: size }));
   }, [setSettings]);
 
@@ -85,8 +99,14 @@ const App: React.FC = () => {
     setResult(null);
 
     try {
-      // Step 1: Generate Prompt (with reference image if provided)
-      const promptData = await generateDoufangPrompt(trimmedKeyword, apiKey, referenceImage, signal);
+      // Step 1: Generate Prompt (with reference image and customization options if provided)
+      const promptData = await generateDoufangPrompt(
+        trimmedKeyword, 
+        apiKey, 
+        referenceImage, 
+        customizationOptions,
+        signal
+      );
       
       // Check if request was cancelled
       if (signal.aborted) return;
@@ -119,15 +139,19 @@ const App: React.FC = () => {
       // Ignore cancellation errors
       if (signal.aborted) return;
       
-      console.error(err);
+      console.error('Generation error:', err);
+      
+      // Handle different error types
       if (err instanceof AppError) {
         setError(getUserFriendlyErrorMessage(err));
       } else if (err instanceof Error) {
         // Ignore cancellation error messages
-        if (err.message === 'Request cancelled') return;
+        if (err.message === 'Request cancelled' || err.name === 'AbortError') return;
         setError(err.message || "發生未知錯誤");
+      } else if (typeof err === 'string') {
+        setError(err);
       } else {
-        setError("發生未知錯誤");
+        setError("發生未知錯誤，請稍後再試");
       }
       setStatus(GenerationStatus.ERROR);
     } finally {
@@ -136,15 +160,15 @@ const App: React.FC = () => {
         abortControllerRef.current = null;
       }
     }
-  }, [keyword, apiKey, imageModel, imageSize, referenceImage]);
+  }, [keyword, apiKey, imageModel, imageSize, referenceImage, customizationOptions]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
-    }
-  };
+      }
+    };
   }, []);
 
   const handleSwitchToFlash = useCallback(() => {
@@ -291,6 +315,13 @@ const App: React.FC = () => {
                 </button>
              </div>
           </form>
+          
+          {/* Customization Panel */}
+          <CustomizationPanel
+            options={customizationOptions}
+            onChange={setCustomizationOptions}
+            disabled={status === GenerationStatus.PROCESSING_PROMPT || status === GenerationStatus.PROCESSING_IMAGE}
+          />
           
           {/* Reference Image Upload Section */}
           <div className="mt-6 relative">

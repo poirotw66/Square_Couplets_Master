@@ -74,8 +74,10 @@ export const ImageResult: React.FC<ImageResultProps> = memo(({ imageUrl, isLoadi
                      src={imageUrl} 
                      alt="Generated Doufang artwork" 
                      className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-                     loading="lazy"
+                     loading="eager"
+                     decoding="async"
                      onError={() => setImageError(true)}
+                     onLoad={() => setImageError(false)}
                    />
                  )}
                  {/* Paper Texture Overlay */}
