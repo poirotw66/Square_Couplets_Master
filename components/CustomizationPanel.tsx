@@ -277,6 +277,44 @@ export const CustomizationPanel: React.FC<CustomizationPanelProps> = ({
               )}
             </div>
           </div>
+
+          {/* Custom Style Description (Optional) */}
+          <div>
+            <label 
+              htmlFor="custom-style-description"
+              className="block text-amber-200/80 text-sm font-bold mb-3"
+            >
+              自訂風格描述（選填）
+            </label>
+            <textarea
+              id="custom-style-description"
+              value={options.customStyleDescription || ''}
+              onChange={(e) => {
+                const inputValue = e.target.value;
+                updateOption('customStyleDescription', inputValue.trim().length > 0 ? inputValue.trim() : undefined);
+              }}
+              placeholder="例如：希望整體呈現溫馨的氛圍，使用柔和的色調，搭配花卉圖案..."
+              disabled={disabled}
+              maxLength={200}
+              rows={4}
+              aria-label="自訂風格描述輸入"
+              aria-describedby="style-description-help"
+              className="w-full bg-black/40 border border-amber-900/50 rounded-lg px-4 py-3 text-amber-100 placeholder-amber-500/20 focus:outline-none focus:border-amber-500/50 transition-colors text-sm resize-y min-h-[100px]"
+            />
+            <div id="style-description-help" className="mt-2 space-y-1">
+              <p className="text-xs text-amber-500/40">
+                可輸入您想要的整體風格描述，AI 會參考此描述來生成春聯
+              </p>
+              <p className="text-xs text-amber-500/50 italic">
+                💡 提示：此描述會與上方的選項結合使用，提供更詳細的風格指引
+              </p>
+              {options.customStyleDescription && options.customStyleDescription.length > 0 && (
+                <p className="text-xs text-amber-400/70 mt-1">
+                  已輸入 {options.customStyleDescription.length} / 200 字元
+                </p>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

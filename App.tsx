@@ -39,7 +39,8 @@ const App: React.FC = () => {
     customArtStyle: undefined,
     customColorTheme: undefined,
     customCalligraphyStyle: undefined,
-    customDecorationLevel: undefined
+    customDecorationLevel: undefined,
+    customStyleDescription: undefined
   });
   
   // Direct access to settings (no need for memoization on simple property access)

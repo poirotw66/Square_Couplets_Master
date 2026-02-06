@@ -89,4 +89,5 @@ export interface CustomizationOptions {
   decorationLevel: DecorationLevel;
   customDecorationLevel?: string; // Custom decoration level description
   customBlessingPhrase?: string; // Optional: user can provide their own 4-character phrase
+  customStyleDescription?: string; // Optional: user can provide a general style description
 }

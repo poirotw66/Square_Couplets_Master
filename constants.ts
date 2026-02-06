@@ -167,11 +167,11 @@ ${customizationOptions ? `
     customizationOptions.calligraphyStyle === 'zhuanshu' ? 'Zhuanshu (Seal Script) - ancient and elegant' :
     customizationOptions.calligraphyStyle === 'weibei' ? 'Weibei - strong and powerful' : customizationOptions.calligraphyStyle}
 - **Decoration Level**: ${customizationOptions.decorationLevel === 'custom' && customizationOptions.customDecorationLevel
-  ? customizationOptions.customDecorationLevel
-  : customizationOptions.decorationLevel === 'minimal' ? 'Minimal decorative elements, focus on calligraphy' :
-    customizationOptions.decorationLevel === 'moderate' ? 'Balanced decorative elements and calligraphy' :
-    customizationOptions.decorationLevel === 'rich' ? 'Rich decorative elements with intricate details surrounding the calligraphy' :
-    customizationOptions.decorationLevel === 'extravagant' ? 'Extravagant decorative elements with elaborate details' : customizationOptions.decorationLevel}
+      ? customizationOptions.customDecorationLevel
+      : customizationOptions.decorationLevel === 'minimal' ? 'Minimal decorative elements, focus on calligraphy' :
+        customizationOptions.decorationLevel === 'moderate' ? 'Balanced decorative elements and calligraphy' :
+        customizationOptions.decorationLevel === 'rich' ? 'Rich decorative elements with intricate details surrounding the calligraphy' :
+        customizationOptions.decorationLevel === 'extravagant' ? 'Extravagant decorative elements with elaborate details' : customizationOptions.decorationLevel}${customizationOptions.customStyleDescription ? `\n- **Additional Style Description**: ${customizationOptions.customStyleDescription}\n\nIMPORTANT: The above additional style description should be incorporated into the overall design. Use it to refine and enhance the artwork while maintaining consistency with the other customization preferences.` : ''}
 ` : ''}
 
 ---
@@ -289,11 +289,11 @@ ${customizationOptions.customBlessingPhrase
     customizationOptions.calligraphyStyle === 'zhuanshu' ? 'Zhuanshu (Seal Script) - ancient and elegant seal script style' :
     customizationOptions.calligraphyStyle === 'weibei' ? 'Weibei - strong and powerful Wei stele style' : customizationOptions.calligraphyStyle}
 - **Decoration Level**: ${customizationOptions.decorationLevel === 'custom' && customizationOptions.customDecorationLevel
-  ? customizationOptions.customDecorationLevel
-  : customizationOptions.decorationLevel === 'minimal' ? 'Minimal decorative elements, focus primarily on calligraphy with subtle background patterns' :
-    customizationOptions.decorationLevel === 'moderate' ? 'Balanced decorative elements and calligraphy, harmonious composition' :
-    customizationOptions.decorationLevel === 'rich' ? 'Rich decorative elements with intricate details, elaborate patterns, symbols, and motifs surrounding the calligraphy' :
-    customizationOptions.decorationLevel === 'extravagant' ? 'Extravagant decorative elements with extremely elaborate details and luxurious patterns' : customizationOptions.decorationLevel}
+      ? customizationOptions.customDecorationLevel
+      : customizationOptions.decorationLevel === 'minimal' ? 'Minimal decorative elements, focus primarily on calligraphy with subtle background patterns' :
+        customizationOptions.decorationLevel === 'moderate' ? 'Balanced decorative elements and calligraphy, harmonious composition' :
+        customizationOptions.decorationLevel === 'rich' ? 'Rich decorative elements with intricate details, elaborate patterns, symbols, and motifs surrounding the calligraphy' :
+        customizationOptions.decorationLevel === 'extravagant' ? 'Extravagant decorative elements with extremely elaborate details and luxurious patterns' : customizationOptions.decorationLevel}${customizationOptions.customStyleDescription ? `\n- **Additional Style Description**: ${customizationOptions.customStyleDescription}\n\nIMPORTANT: The above additional style description should be incorporated into the overall design. Use it to refine and enhance the artwork while maintaining consistency with the other customization preferences.` : ''}
 
 ---
 
@@ -389,6 +389,11 @@ CRITICAL INSTRUCTION: A reference image has been provided above. You MUST analyz
     prompt += `\n- Color Theme: ${colorThemeDesc}`;
     prompt += `\n- Calligraphy Style: ${calligraphyStyleDesc}`;
     prompt += `\n- Decoration Level: ${decorationLevelDesc}`;
+    
+    if (customizationOptions.customStyleDescription && customizationOptions.customStyleDescription.trim()) {
+      prompt += `\n- Additional Style Description: ${customizationOptions.customStyleDescription.trim()}`;
+      prompt += `\n\nIMPORTANT: The above additional style description should be incorporated into the overall design. Use it to refine and enhance the artwork while maintaining consistency with the other customization preferences and the reference image style.`;
+    }
   }
   
   prompt += `
@@ -462,6 +467,11 @@ export const getSimpleUserInputPrompt = (
     prompt += `\n- Color Theme: ${colorThemeDesc}`;
     prompt += `\n- Calligraphy Style: ${calligraphyStyleDesc}`;
     prompt += `\n- Decoration Level: ${decorationLevelDesc}`;
+    
+    if (customizationOptions.customStyleDescription && customizationOptions.customStyleDescription.trim()) {
+      prompt += `\n- Additional Style Description: ${customizationOptions.customStyleDescription.trim()}`;
+      prompt += `\n\nIMPORTANT: The above additional style description should be incorporated into the overall design. Use it to refine and enhance the artwork while maintaining consistency with the other customization preferences.`;
+    }
   }
   
   return prompt;
