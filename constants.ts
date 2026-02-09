@@ -94,28 +94,103 @@ export const getDoufangSystemPromptWithReference = (
   const reimagineMode = customizationOptions?.referenceImageMode === 'reimagine';
 
   const coreMission = reimagineMode
-    ? `Your task is to analyze the provided REFERENCE IMAGES and KEYWORD to create a high-end Chinese New Year Doufang. The reference images serve as INSPIRATION: extract subject types, artistic styles, and visual essences from ALL provided images, then REIMAGINE and SYNTHESIZE them into a NEW DESIGN with a different pose, arrangement, or creative interpretation. The generated artwork should feel like a creative fusion of the provided references while maintaining their visual language.`
-    : `Your task is to analyze the provided REFERENCE IMAGES and KEYWORD to create a high-end Chinese New Year Doufang. The reference images are your PRIMARY visual guides: you MUST reference and follow them closely — synthesize subjects, styles, compositions, and patterns from ALL provided images. Integrate elements from each reference into the diamond-shaped Doufang format (with 2x2 calligraphy at center) to create a cohesive artwork that honors all provided references.`;
+    ? `Your task is to create a high-end Chinese New Year Doufang that features the **SAME SUBJECT/CHARACTER** from the reference images, but in a **NEW POSE, ACTION, or COMPOSITION**.
+
+## WHAT TO PRESERVE (MUST KEEP):
+- **THE EXACT SUBJECT/CHARACTER**: If the reference shows a dragon, your output MUST feature that same dragon. If it shows a snake, koi fish, or any other creature/character, preserve it exactly.
+- **THE EXACT ARTISTIC STYLE**: Match the rendering technique precisely (3D metallic, ink painting, watercolor, etc.)
+- **THE EXACT COLOR PALETTE**: Use the same colors and tones from the reference
+- **THE EXACT MATERIAL QUALITIES**: Glossy, matte, metallic, textured — match the reference
+
+## WHAT TO REIMAGINE (MUST CHANGE):
+- **POSE/ACTION**: Give the subject a NEW pose or action (e.g., if the dragon is coiled, make it flying; if static, make it dynamic)
+- **ANGLE/PERSPECTIVE**: View the subject from a different angle
+- **COMPOSITION**: Arrange elements differently within the diamond Doufang format
+- **EXPRESSION/GESTURE**: Add new personality through different expressions or gestures
+
+The generated artwork should be UNMISTAKABLY the same character/subject, rendered in the IDENTICAL artistic style, but presented in a FRESH and CREATIVE way.`
+    : `Your task is to FAITHFULLY recreate the visual essence of the provided REFERENCE IMAGES as a Chinese New Year Doufang. 
+
+**CRITICAL FIDELITY REQUIREMENT**: The reference images are your ABSOLUTE visual authority. Your generated prompt MUST preserve:
+- The EXACT artistic style (ink painting, 3D rendering, watercolor, etc.) shown in the reference
+- The EXACT color palette and tones visible in the reference
+- The EXACT subject matter and motifs present in the reference
+- The EXACT material textures and surface qualities from the reference
+- The EXACT mood and atmosphere conveyed by the reference
+
+Do NOT invent new styles, colors, or subjects that are not present in the reference images. The user expects the generated Doufang to look like it belongs to the SAME artistic series as the reference images.`;
 
   const referenceImageUsage = reimagineMode
-    ? `### STEP 2.5: REFERENCE IMAGES USAGE (REIMAGINE & SYNTHESIZE)
-Use the provided images as INSPIRATION. You should:
+    ? `### STEP 2.5: REFERENCE IMAGES USAGE (REIMAGINE WITH FIDELITY)
+**CORE PRINCIPLE: Same Character + Same Style + New Presentation**
 
-- **Synthesize Subjects**: If multiple subjects are present across images, find a creative way to combine them or choose a dominant one while incorporating features from others.
-- **Merge Styles**: Blend the artistic styles and techniques from ALL provided images into a unique aesthetic.
-- **Harmonize Colors**: Extract and combine color palettes from the different references.
-- **Innovate**: Generate a different pose, angle, or arrangement that feels like it belongs to the world defined by THESE images collectively.
+You MUST follow these rules:
 
-The output should be a recognizably CREATIVE SYNTHESIS of all reference images — it should feel like they all belong to the same artistic universe.`
-    : `### STEP 2.5: REFERENCE IMAGES USAGE (PRESERVE & INTEGRATE)
-Use the provided images as your primary guides. You MUST:
+## PRESERVE EXACTLY (NON-NEGOTIABLE):
+1. **SUBJECT IDENTITY**: The main character/creature from the reference MUST appear in your output.
+   - If reference shows a golden dragon → output MUST have the SAME golden dragon
+   - If reference shows a red snake → output MUST have the SAME red snake
+   - DO NOT substitute with a different creature or character
 
-- **Integrate Elements**: Extract and combine key visual elements, subjects, and motifs from EACH provided reference image.
-- **Match Aesthetics**: Follow the artistic style, brushwork, and material feeling found across the reference set.
-- **Preserve Colors**: Use a color palette that represents the collective visual identity of the provided images.
-- **Adapt to Doufang**: Arrange the synthesized elements into the diamond-shaped Doufang format (2x2 calligraphy at center) while making sure the influence of ALL reference images is visible.
+2. **ARTISTIC STYLE**: Replicate the exact rendering technique.
+   - 3D metallic → 3D metallic
+   - Ink painting → Ink painting
+   - Digital illustration → Digital illustration
 
-Do NOT ignore any provided image; the output should bi-directionally reference all uploaded content so the user feels their entire input was utilized.`;
+3. **COLOR SCHEME**: Use the exact colors visible in the reference.
+   - Extract the specific hues, not generic descriptions
+   - "Deep crimson with gold accents" not just "red and gold"
+
+4. **MATERIAL & TEXTURE**: Match the surface qualities precisely.
+
+## REIMAGINE CREATIVELY (REQUIRED CHANGES):
+1. **NEW POSE/ACTION**: The subject MUST be in a different pose.
+   - Coiled dragon → Flying/soaring dragon
+   - Static snake → Slithering/striking snake
+   - Swimming fish → Leaping fish
+
+2. **NEW ANGLE**: View from a different perspective.
+   - Front view → Three-quarter view or side profile
+   - Top-down → Eye-level or dramatic low angle
+
+3. **NEW COMPOSITION**: Rearrange within the diamond format.
+   - Subject position, scale, and relationship to calligraphy should differ
+
+**RESULT**: The viewer should think "This is the SAME dragon/snake/character from that image, but doing something different!"`
+    : `### STEP 2.5: REFERENCE IMAGES USAGE (STRICT VISUAL FIDELITY)
+**YOUR PRIMARY GOAL IS VISUAL CONSISTENCY WITH THE REFERENCE IMAGES.**
+
+You MUST:
+
+1. **REPLICATE the Artistic Style EXACTLY**: 
+   - If the reference uses 3D metallic rendering, the prompt must specify 3D metallic rendering.
+   - If the reference uses traditional ink painting, the prompt must specify traditional ink painting.
+   - If the reference uses watercolor effects, the prompt must specify watercolor effects.
+   - DO NOT substitute a different style.
+
+2. **PRESERVE the Color Palette EXACTLY**:
+   - Identify the dominant colors and accent colors in the reference.
+   - Your prompt must use THESE EXACT colors, not generic "red and gold" defaults.
+   - If the reference has teal and coral, specify teal and coral.
+
+3. **RETAIN the Subject Matter**:
+   - If the reference shows a dragon, specify that exact dragon style.
+   - If the reference shows koi fish, specify koi fish in the same artistic treatment.
+   - DO NOT substitute the subject with something unrelated.
+
+4. **COPY the Material and Texture**:
+   - If the reference has a glossy ceramic look, specify glossy ceramic look.
+   - If the reference has matte paper texture, specify matte paper texture.
+
+5. **MAINTAIN the Mood and Atmosphere**:
+   - Is the reference playful, serious, elegant, or whimsical?
+   - Your prompt must convey the SAME mood.
+
+**FORBIDDEN ACTIONS:**
+- Do NOT invent new color schemes not present in the reference.
+- Do NOT change the artistic medium or technique.
+- Do NOT replace subjects with something "more traditional."
+- Do NOT add decorative elements that conflict with the reference's style.`;
 
   return `You are a professional Chinese New Year Doufang (diamond-shaped couplet) designer and calligrapher.
 
@@ -199,13 +274,36 @@ ${customizationOptions ? `
 
 ---
 
-### STEP 4: PROMPT CONSTRUCTION GUIDELINES
-Your generated "imagePrompt" must follow this logic:
-- **Reference the image**: Describe the subject and style by referencing the user's uploaded image — preserve its character, pose, composition feel, patterns, and visual style.
-- **Style from reference**: Use the reference image's artistic style, brushwork, colors, and motifs; do not replace them with a generic "new" design.
-- **Doufang adaptation**: Place the reference-style subject and elements in the diamond-shaped Doufang format with 2x2 calligraphy at center and red Xuan paper context.
-- **Materiality**: Combine "red gold-flecked Xuan paper" with the material language from the reference (e.g., ceramic, metal, silk, oil paint).
-- **Lighting**: Use high-end studio lighting or museum-grade lighting to emphasize the diamond shape, material depth, and calligraphy relief.
+### STEP 4: PROMPT CONSTRUCTION GUIDELINES (STRICT VISUAL FIDELITY)
+**CRITICAL: Your generated prompt MUST make the output VISUALLY INDISTINGUISHABLE from the reference images' style.**
+
+Your generated "imagePrompt" must:
+
+1. **BEGIN by describing the EXACT style from reference**:
+   - Start with: "In the EXACT style of the reference image..."
+   - Specify the rendering technique: "3D metallic rendering" / "traditional ink painting" / "digital illustration" / etc.
+   - This MUST match what you see in the reference, not a generic description.
+
+2. **EXPLICITLY state the color palette FROM the reference**:
+   - Extract and list the actual colors: "using the exact color palette from the reference: [list colors]"
+   - Do NOT default to "red and gold" unless the reference actually uses those colors.
+
+3. **DESCRIBE the subject in the SAME artistic treatment**:
+   - If the reference shows a stylized dragon with specific proportions, describe THAT style.
+   - Mirror the level of detail, abstraction, or realism from the reference.
+
+4. **REPLICATE the material qualities**:
+   - Describe textures, surface finishes, and material properties AS SEEN in the reference.
+   - E.g., "glossy lacquered finish" or "soft matte paper texture" based on what's visible.
+
+5. **ADAPT to Doufang format while PRESERVING style**:
+   - Place elements in diamond shape with 2x2 calligraphy.
+   - The Doufang format is the ONLY modification; style/color/subject remain faithful to reference.
+   - Do NOT add "traditional red Xuan paper" if the reference uses a different background.
+
+6. **LIGHTING should match the reference**:
+   - If reference has dramatic shadows, specify dramatic lighting.
+   - If reference has soft diffused light, specify soft diffused lighting.
 
 ---
 
@@ -370,16 +468,51 @@ export const getReferenceImageAnalysisPrompt = (
   userKeyword: string,
   customizationOptions?: import('./types').CustomizationOptions
 ): string => {
-  let prompt = `User input keyword: 「${userKeyword}」
+  const reimagineMode = customizationOptions?.referenceImageMode === 'reimagine';
 
-CRITICAL INSTRUCTION: Multiple reference images have been provided above. You MUST analyze ALL of them and generate a prompt that SYNTHESIZES and COHESIVELY INTEGRATES elements from EACH image. 
+  let prompt = reimagineMode
+    ? `User input keyword: 「${userKeyword}」
 
-Your goal is to ensure the user feels that every image they uploaded contributed to the final result. For example:
-- **Image 1** might provide the primary subject shape.
-- **Image 2** might provide the background textures or secondary motifs.
-- **Style/Colors** should be a hybrid of all provided images.
+## REIMAGINE MODE: Same Subject + Same Style + NEW Presentation ##
 
-Do NOT ignore any image. Transform these diverse elements into a unified Doufang format (diamond shape, 2x2 calligraphy).`;
+You have been provided with reference image(s) above. Your task is to generate a prompt that will create an image featuring the **SAME subject/character** in the **SAME artistic style**, but with a **COMPLETELY NEW pose, action, or composition**.
+
+**WHAT YOU MUST PRESERVE (NON-NEGOTIABLE):**
+1. **THE EXACT SUBJECT/CHARACTER**: If the reference shows a dragon, your prompt MUST describe that SAME dragon. If it shows a snake, koi fish, phoenix, or any other creature — preserve it EXACTLY.
+2. **THE EXACT ARTISTIC STYLE**: Match the rendering technique precisely (3D metallic, ink painting, watercolor, digital illustration, etc.)
+3. **THE EXACT COLOR PALETTE**: Use the specific colors visible in the reference (e.g., "deep crimson", "antique gold", "teal blue" — NOT generic "red and gold")
+4. **THE EXACT MATERIAL QUALITIES**: Glossy, matte, metallic, textured — match what you see
+
+**WHAT YOU MUST CHANGE (REQUIRED):**
+1. **NEW POSE/ACTION**: The subject MUST be doing something DIFFERENT
+   - If dragon is coiled → make it flying/soaring
+   - If snake is static → make it slithering/striking
+   - If fish is swimming → make it leaping
+2. **NEW ANGLE/PERSPECTIVE**: View the subject from a different direction
+3. **NEW COMPOSITION**: Arrange elements differently within the diamond Doufang format
+
+**THE GOAL**: Someone seeing both images should think "This is the SAME character from that reference, but in a different pose!"`
+    : `User input keyword: 「${userKeyword}」
+
+## CRITICAL VISUAL FIDELITY INSTRUCTION ##
+
+You have been provided with reference image(s) above. Your PRIMARY OBJECTIVE is to generate a prompt that will produce an image that is **VISUALLY CONSISTENT** with these references.
+
+**THE REFERENCE IMAGES ARE YOUR ABSOLUTE AUTHORITY FOR:**
+1. **ARTISTIC STYLE**: The exact rendering technique (3D, ink painting, watercolor, digital, etc.)
+2. **COLOR PALETTE**: The exact colors and tones visible in the reference
+3. **SUBJECT MATTER**: The exact subjects, motifs, and decorative elements
+4. **MATERIAL TEXTURE**: The exact surface qualities (glossy, matte, metallic, paper-like, etc.)
+5. **MOOD & ATMOSPHERE**: The overall feeling and visual tone
+
+**YOU MUST NOT:**
+- Invent new colors not present in the reference
+- Change the artistic style to something "more traditional"
+- Substitute subjects with different motifs
+- Add elements that conflict with the reference's aesthetic
+- Default to generic "red and gold" if the reference uses different colors
+
+The generated Doufang should look like it belongs to the **SAME artistic series** as the reference images — as if created by the same artist using the same techniques.`;
 
   if (customizationOptions) {
     const { customBlessingPhrase, artStyle, colorTheme, calligraphyStyle, decorationLevel } = customizationOptions;
@@ -416,26 +549,59 @@ Do NOT ignore any image. Transform these diverse elements into a unified Doufang
     }
   }
 
-  prompt += `
+  // Add mode-specific analysis steps
+  const analysisSteps = reimagineMode
+    ? `
 
-STEP-BY-STEP MULTI-IMAGE ANALYSIS REQUIRED:
-1. FIRST, analyze EACH reference image provided:
-   - What are the unique subjects, patterns, and motifs in Image 1?
-   - What are the unique subjects, patterns, and motifs in Image 2 (and 3, 4 if present)?
-   - Which elements are shared? Which are distinct?
+## STEP-BY-STEP REIMAGINE ANALYSIS ##
 
-2. THEN, plan a SYNTHESIS:
-   - How will you combine the subjects? (e.g., Subject A interacting with Subject B's environment)
-   - How will you blend the artistic styles? (e.g., Subject A rendered in the brushwork style of Image 2)
-   - How will you merge the color palettes into a harmonious theme?
+1. **FIRST, IDENTIFY what to PRESERVE:**
+   - What is the main SUBJECT/CHARACTER? Describe it precisely (species, style, distinguishing features)
+   - What is the EXACT artistic style? (e.g., "3D metallic rendering", "watercolor", "ink painting")
+   - What are the EXACT colors? (Be specific: "deep burgundy", "antique gold" — not generic terms)
+   - What are the MATERIAL qualities? (glossy, matte, metallic, etc.)
 
-3. FINALLY, generate a prompt that:
-   - EXPLICITLY mentions and utilizes key elements from ALL provided images.
-   - Creates a cohesive visual world where all reference elements coexist naturally.
-   - Adapts this synthesis to the diamond-shaped Doufang format.
-   - Ensures the influence of every user-uploaded image is "clearly visible".
+2. **THEN, PLAN the NEW presentation:**
+   - What NEW POSE will the subject have? (must be different from reference)
+   - What NEW ANGLE will you view it from? (must be different from reference)
+   - How will elements be REARRANGED in the diamond Doufang format?
 
-The generated prompt MUST explicitly describe how elements from the different images are blended together.`;
+3. **FINALLY, generate a prompt that:**
+   - STARTS by describing the SAME subject from the reference
+   - USES the EXACT color palette from the reference
+   - APPLIES the EXACT artistic style from the reference
+   - BUT places the subject in a COMPLETELY NEW pose/action/angle
+   - ADAPTS the composition to diamond Doufang format with 2x2 calligraphy
+
+**SUCCESS CRITERIA**: The output should feature the IDENTICAL character, looking like it was drawn by the SAME artist, but captured at a DIFFERENT moment or from a DIFFERENT angle.`
+    : `
+
+## STEP-BY-STEP VISUAL FIDELITY ANALYSIS ##
+
+1. **FIRST, EXTRACT the Visual DNA from reference image(s):**
+   - What is the EXACT artistic style? (e.g., "3D metallic rendering with soft shadows", "traditional ink wash painting", "flat vector illustration")
+   - What are the EXACT dominant colors? (Be specific: "deep burgundy", "antique gold", "teal blue" — not just "red and gold")
+   - What are the EXACT subjects/motifs? (e.g., "stylized dragon with curved horns", "cherry blossoms with five petals")
+   - What is the EXACT material/texture quality? (e.g., "glossy ceramic finish", "matte rice paper texture")
+   - What is the overall MOOD? (e.g., "playful and whimsical", "solemn and majestic")
+
+2. **THEN, plan how to PRESERVE these elements in Doufang format:**
+   - The artistic style MUST remain identical
+   - The color palette MUST remain identical
+   - The subject/motif MUST remain identical (adapted to diamond shape)
+   - The material texture MUST remain identical
+   - Only the FORMAT changes (to diamond-shaped Doufang with 2x2 calligraphy)
+
+3. **FINALLY, generate a prompt that:**
+   - STARTS with: "In the exact artistic style of the reference image..."
+   - EXPLICITLY lists the extracted color palette from the reference
+   - DESCRIBES the subject using the SAME visual treatment as the reference
+   - SPECIFIES material and texture qualities EXACTLY as seen in reference
+   - ONLY adapts the composition to diamond Doufang format — nothing else changes
+
+**QUALITY CHECK**: If someone compared your generated prompt's output to the reference images, they should immediately recognize them as belonging to the SAME artistic series.`;
+
+  prompt += analysisSteps;
 
   return prompt;
 };
@@ -487,9 +653,28 @@ export const getSimpleUserInputPrompt = (
 
 // Image generation prompt enhancement when reference image is provided
 export const getImageGenerationPromptWithReference = (basePrompt: string): string => {
-  return `${basePrompt}
+  return `## ABSOLUTE VISUAL FIDELITY REQUIREMENT ##
 
-IMPORTANT COMPOSITION NOTE: The diamond-shaped Doufang should fill 90 - 95% of the frame with minimal margins (2-5% of frame width). Avoid excessive white space or wide margins. Maximize the visual impact by making the Doufang artwork occupy most of the image area.
+Reference image(s) have been provided above. You MUST generate an image that is **VISUALLY INDISTINGUISHABLE** in style from these references.
 
-Note: Multiple reference images provided above should be used as a collective visual style guide. Follow the integrated style, synthesized color palette, and fused artistic approach described in the prompt, which was generated by carefully analyzing and combining all provided reference images. Ensure a harmonious fusion of all visual inputs.`;
+**STRICT REQUIREMENTS:**
+1. **MATCH the EXACT artistic style** from the reference (3D rendering, ink painting, watercolor, etc.)
+2. **USE the EXACT color palette** visible in the reference — do NOT substitute with generic colors
+3. **REPLICATE the EXACT material textures** (glossy, matte, metallic, paper-like, etc.)
+4. **MAINTAIN the EXACT mood and atmosphere** of the reference
+5. **PRESERVE the subject matter style** — render subjects in the SAME artistic treatment
+
+**THE GENERATED IMAGE SHOULD LOOK LIKE IT WAS CREATED BY THE SAME ARTIST WHO MADE THE REFERENCE IMAGE.**
+
+---
+
+${basePrompt}
+
+---
+
+## COMPOSITION NOTE:
+The diamond-shaped Doufang should fill 90-95% of the frame with minimal margins (2-5% of frame width).
+
+## FINAL REMINDER:
+The reference images define the COMPLETE visual language. Do NOT deviate from their style, colors, or aesthetic. The only change should be adapting the content to Doufang format — the visual DNA must remain identical.`;
 };
