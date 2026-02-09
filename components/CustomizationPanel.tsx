@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import type { CustomizationOptions, ArtStyle, ColorTheme, CalligraphyStyle, DecorationLevel, ReferenceImageMode } from '../types';
+import type { CustomizationOptions, ArtStyle, ColorTheme, CalligraphyStyle, DecorationLevel, ReferenceImageMode, VisualLayout } from '../types';
 import { OptionGroup } from './OptionGroup';
 
 interface CustomizationPanelProps {
@@ -40,53 +40,77 @@ export const CustomizationPanel: React.FC<CustomizationPanelProps> = ({
 
   // Expanded art style options
   const artStyleOptions: { value: ArtStyle; label: string; description: string }[] = [
-    { value: 'traditional', label: '傳統風格', description: '經典傳統水墨畫風格' },
-    { value: 'modern', label: '現代風格', description: '融合現代設計元素' },
-    { value: 'minimalist', label: '簡約風格', description: '簡潔優雅的設計' },
-    { value: 'luxurious', label: '華麗風格', description: '豐富的裝飾與細節' },
-    { value: 'vintage', label: '復古風格', description: '懷舊復古的設計風格' },
-    { value: 'contemporary', label: '當代風格', description: '當代藝術風格' },
-    { value: 'abstract', label: '抽象風格', description: '抽象藝術表現' },
-    { value: 'realistic', label: '寫實風格', description: '寫實主義風格' },
-    { value: 'custom', label: '自定義', description: '輸入自己的風格描述' },
+    { value: 'traditional', label: '傳統', description: '傳統水墨畫' },
+    { value: 'modern', label: '現代', description: '融合設計元素' },
+    { value: 'minimalist', label: '簡約', description: '簡潔優雅' },
+    { value: 'luxurious', label: '華麗', description: '豐富細節' },
+    { value: 'cartoon', label: '卡通', description: '美式/日式卡通' },
+    { value: 'childlike', label: '童趣', description: '純真可愛風格' },
+    { value: 'hand-drawn', label: '手繪', description: '溫厚手製感' },
+    { value: '3d-render', label: '3D 立體', description: '立體擬真質感' },
+    { value: 'watercolor', label: '水彩', description: '渲染透明感' },
+    { value: 'paper-cut', label: '剪紙', description: '傳統剪紙鏤空' },
+    { value: 'cyberpunk', label: '賽博龐克', description: '霓虹未來感' },
+    { value: 'pixel-art', label: '像素', description: '復古點陣風' },
+    { value: 'custom', label: '自定義', description: '輸入風格描述' },
   ];
 
   // Expanded color theme options
   const colorThemeOptions: { value: ColorTheme; label: string; description: string }[] = [
-    { value: 'classic-red-gold', label: '經典紅金', description: '傳統紅金配色' },
-    { value: 'elegant-subtle', label: '淡雅色調', description: '柔和優雅的色彩' },
-    { value: 'vibrant-rich', label: '濃郁色彩', description: '鮮豔豐富的配色' },
-    { value: 'monochrome', label: '單色調', description: '黑白灰單色風格' },
-    { value: 'pastel-soft', label: '粉彩柔和', description: '粉彩色調柔和風格' },
-    { value: 'deep-mysterious', label: '深邃神秘', description: '深色神秘色調' },
-    { value: 'warm-earth', label: '暖色大地', description: '暖色調大地色系' },
-    { value: 'cool-blue', label: '冷色藍調', description: '冷色調藍色系' },
-    { value: 'custom', label: '自定義', description: '輸入自己的顏色描述' },
+    { value: 'classic-red-gold', label: '經典紅金', description: '傳統紅金' },
+    { value: 'elegant-subtle', label: '淡雅', description: '柔和優雅' },
+    { value: 'vibrant-rich', label: '濃郁', description: '鮮豔豐富' },
+    { value: 'monochrome', label: '單色', description: '黑白灰' },
+    { value: 'pastel-soft', label: '粉彩', description: '柔和少女心' },
+    { value: 'custom', label: '自定義', description: '輸入顏色描述' },
   ];
 
   // Expanded calligraphy style options
   const calligraphyStyleOptions: { value: CalligraphyStyle; label: string; description: string }[] = [
-    { value: 'kaishu', label: '楷書', description: '端莊工整的楷書字體' },
-    { value: 'xingshu', label: '行書', description: '流暢優雅的行書字體' },
-    { value: 'caoshu', label: '草書', description: '奔放瀟灑的草書字體' },
-    { value: 'lishu', label: '隸書', description: '古樸典雅的隸書字體' },
-    { value: 'zhuanshu', label: '篆書', description: '古樸典雅的篆書字體' },
-    { value: 'weibei', label: '魏碑', description: '剛勁有力的魏碑字體' },
-    { value: 'custom', label: '自定義', description: '輸入自己的字體描述' },
+    { value: 'kaishu', label: '楷書', description: '工整端莊' },
+    { value: 'xingshu', label: '行書', description: '流暢優雅' },
+    { value: 'caoshu', label: '草書', description: '奔放瀟灑' },
+    { value: 'cute', label: '可愛字體', description: '圓潤萌系' },
+    { value: 'pop', label: 'POP 體', description: '生動活潑' },
+    { value: 'handwriting', label: '手寫體', description: '自然隨性' },
+    { value: 'crayon', label: '蠟筆體', description: '童趣塗鴉感' },
+    { value: 'chalk', label: '粉筆體', description: '黑板報風格' },
+    { value: 'custom', label: '自定義', description: '輸入字體描述' },
   ];
 
   // Expanded decoration level options
   const decorationLevelOptions: { value: DecorationLevel; label: string; description: string }[] = [
-    { value: 'minimal', label: '簡約', description: '最少裝飾元素' },
-    { value: 'moderate', label: '適中', description: '平衡的裝飾' },
-    { value: 'rich', label: '豐富', description: '豐富的裝飾細節' },
-    { value: 'extravagant', label: '極致', description: '極致華麗的裝飾' },
-    { value: 'custom', label: '自定義', description: '輸入自己的裝飾描述' },
+    { value: 'minimal', label: '簡約', description: '極簡裝飾' },
+    { value: 'moderate', label: '適中', description: '平衡裝飾' },
+    { value: 'rich', label: '豐富', description: '精緻裝飾' },
+    { value: 'extravagant', label: '極致', description: '頂級華麗' },
+  ];
+
+  // Visual layout options
+  const visualLayoutOptions: { value: VisualLayout; label: string; description: string }[] = [
+    { value: 'default', label: '預設佈局', description: '文字居中，背景或四角主體襯托' },
+    // 中心型
+    { value: 'center-surround', label: '文字中心・環繞型', description: '文字在中央，主體環繞排佈' },
+    { value: 'center-background', label: '文字中心・背景型', description: '文字在中央，主體位於後景層' },
+    { value: 'center-corners', label: '文字中心・四角型', description: '文字在中央，主體分佈於四角' },
+    // 邊緣型
+    { value: 'edge-left', label: '左側型', description: '文字沿左側邊緣直排，主體靠右' },
+    { value: 'edge-top', label: '上方型', description: '文字沿頂部邊緣橫排，主體在下' },
+    // 分區型
+    { value: 'split-top-bottom', label: '上下分型', description: '畫面上方文字，下方主體' },
+    { value: 'split-left-right', label: '左右分型', description: '畫面左側文字，右側主體' },
+    // 藝術型
+    { value: 'diagonal', label: '對角平衡型', description: '文字與主體呈對角分佈，富有動感' },
+    { value: 'negative-space', label: '留白藝術型', description: '強調大量留白，文字出現在空白處' },
+    // 景深型
+    { value: 'depth-layering', label: '前後景深型', description: '利用前後景分層，創造 3D 空間感' },
+    // 主體中心型
+    { value: 'subject-center-text-corners', label: '主體中心・文字四角型', description: '主體居於中央，四個書法字分佈於四個角落' },
   ];
 
   // Helper function to get display label
   const getDisplayLabel = (
-    value: ArtStyle | ColorTheme | CalligraphyStyle | DecorationLevel,
+    value: ArtStyle | ColorTheme | CalligraphyStyle | DecorationLevel | VisualLayout,
     options: Array<{ value: any; label: string }>
   ): string => {
     if (value === 'custom') {
@@ -97,8 +121,8 @@ export const CustomizationPanel: React.FC<CustomizationPanelProps> = ({
 
   // Handle option click
   const handleOptionClick = (
-    category: 'artStyle' | 'colorTheme' | 'calligraphyStyle' | 'decorationLevel',
-    value: ArtStyle | ColorTheme | CalligraphyStyle | DecorationLevel
+    category: 'artStyle' | 'colorTheme' | 'calligraphyStyle' | 'decorationLevel' | 'visualLayout',
+    value: ArtStyle | ColorTheme | CalligraphyStyle | DecorationLevel | VisualLayout
   ) => {
     if (disabled) return;
 
@@ -151,9 +175,12 @@ export const CustomizationPanel: React.FC<CustomizationPanelProps> = ({
         </div>
         <div className="flex gap-2">
           {!isExpanded && (
-            <div className="flex gap-1 flex-wrap">
+            <div className="flex gap-1 flex-wrap justify-end">
               <span className="text-xs text-amber-500/40 px-2 py-1 bg-amber-900/20 rounded">
                 {getDisplayLabel(options.artStyle, artStyleOptions)}
+              </span>
+              <span className="text-xs text-amber-500/40 px-2 py-1 bg-amber-900/20 rounded">
+                {getDisplayLabel(options.visualLayout || 'default', visualLayoutOptions)}
               </span>
               <span className="text-xs text-amber-500/40 px-2 py-1 bg-amber-900/20 rounded">
                 {getDisplayLabel(options.calligraphyStyle, calligraphyStyleOptions)}
@@ -205,7 +232,6 @@ export const CustomizationPanel: React.FC<CustomizationPanelProps> = ({
             customHelpText="請描述您想要的字體風格"
           />
 
-          {/* Decoration Level */}
           <OptionGroup
             title="裝飾程度"
             options={decorationLevelOptions}
@@ -217,6 +243,16 @@ export const CustomizationPanel: React.FC<CustomizationPanelProps> = ({
             customPlaceholder="例如：僅有邊框裝飾、大量花卉圖案、幾何圖形裝飾..."
             customHelpText="請描述您想要的裝飾風格和程度"
             gridCols="3"
+          />
+
+          {/* Visual Layout */}
+          <OptionGroup
+            title="視覺佈局 (視覺順序)"
+            options={visualLayoutOptions}
+            selectedValue={options.visualLayout || 'default'}
+            onSelect={(value) => handleOptionClick('visualLayout', value)}
+            disabled={disabled}
+            gridCols="2"
           />
 
           {/* Reference Image Mode - Only show when reference image is provided */}
@@ -231,8 +267,8 @@ export const CustomizationPanel: React.FC<CustomizationPanelProps> = ({
                   onClick={() => updateOption('referenceImageMode', 'preserve')}
                   disabled={disabled}
                   className={`relative p-4 rounded-xl border-2 transition-all duration-300 text-left ${(options.referenceImageMode ?? 'preserve') === 'preserve'
-                      ? 'border-amber-500/60 bg-amber-500/10 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
-                      : 'border-amber-900/40 bg-black/20 hover:border-amber-500/40 hover:bg-amber-500/5'
+                    ? 'border-amber-500/60 bg-amber-500/10 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
+                    : 'border-amber-900/40 bg-black/20 hover:border-amber-500/40 hover:bg-amber-500/5'
                     } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <div className="flex items-center gap-2 mb-2">
@@ -254,8 +290,8 @@ export const CustomizationPanel: React.FC<CustomizationPanelProps> = ({
                   onClick={() => updateOption('referenceImageMode', 'reimagine')}
                   disabled={disabled}
                   className={`relative p-4 rounded-xl border-2 transition-all duration-300 text-left ${options.referenceImageMode === 'reimagine'
-                      ? 'border-amber-500/60 bg-amber-500/10 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
-                      : 'border-amber-900/40 bg-black/20 hover:border-amber-500/40 hover:bg-amber-500/5'
+                    ? 'border-amber-500/60 bg-amber-500/10 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
+                    : 'border-amber-900/40 bg-black/20 hover:border-amber-500/40 hover:bg-amber-500/5'
                     } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <div className="flex items-center gap-2 mb-2">

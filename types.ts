@@ -74,10 +74,35 @@ export type ImageModel = 'gemini-2.5-flash-image' | 'gemini-3-pro-image-preview'
 export type ImageSize = '1K' | '2K' | '4K';
 
 // Customization Types
-export type ArtStyle = 'traditional' | 'modern' | 'minimalist' | 'luxurious' | 'vintage' | 'contemporary' | 'abstract' | 'realistic' | 'custom';
+export type ArtStyle =
+  | 'traditional' | 'modern' | 'minimalist' | 'luxurious' | 'vintage'
+  | 'contemporary' | 'abstract' | 'realistic' | 'cartoon' | 'childlike'
+  | 'hand-drawn' | '3d-render' | 'cyberpunk' | 'pixel-art' | 'watercolor' | 'paper-cut' | 'uio-e' | 'custom';
 export type ColorTheme = 'classic-red-gold' | 'elegant-subtle' | 'vibrant-rich' | 'monochrome' | 'pastel-soft' | 'deep-mysterious' | 'warm-earth' | 'cool-blue' | 'custom';
-export type CalligraphyStyle = 'kaishu' | 'xingshu' | 'caoshu' | 'lishu' | 'zhuanshu' | 'weibei' | 'custom';
+export type CalligraphyStyle =
+  | 'kaishu' | 'xingshu' | 'caoshu' | 'lishu' | 'zhuanshu' | 'weibei'
+  | 'cute' | 'pop' | 'handwriting' | 'crayon' | 'chalk' | 'marker' | 'custom';
 export type DecorationLevel = 'minimal' | 'moderate' | 'rich' | 'extravagant' | 'custom';
+
+export type VisualLayout =
+  | 'default'
+  // 中心型
+  | 'center-surround'
+  | 'center-background'
+  | 'center-corners'
+  // 邊緣型
+  | 'edge-left'
+  | 'edge-top'
+  // 分區型
+  | 'split-top-bottom'
+  | 'split-left-right'
+  // 藝術/平衡型
+  | 'diagonal'
+  | 'negative-space'
+  // 景深型
+  | 'depth-layering'
+  // 新增：主體中心
+  | 'subject-center-text-corners';
 
 export interface CustomizationOptions {
   artStyle: ArtStyle;
@@ -91,6 +116,7 @@ export interface CustomizationOptions {
   customBlessingPhrase?: string; // Optional: user can provide their own 4-character phrase
   customStyleDescription?: string; // Optional: user can provide a general style description
   referenceImageMode?: ReferenceImageMode; // Optional: how to use the reference image
+  visualLayout?: VisualLayout; // Optional: selective visual layout
 }
 
 // Reference Image Mode Types

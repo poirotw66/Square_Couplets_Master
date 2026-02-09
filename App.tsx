@@ -40,7 +40,8 @@ const App: React.FC = () => {
     customCalligraphyStyle: undefined,
     customDecorationLevel: undefined,
     customStyleDescription: undefined,
-    referenceImageMode: 'preserve'
+    referenceImageMode: 'preserve',
+    visualLayout: 'default'
   });
 
   // Direct access to settings (no need for memoization on simple property access)
@@ -127,6 +128,7 @@ const App: React.FC = () => {
         imageModel,
         imageSize,
         referenceImages.length > 0 ? referenceImages : null,
+        customizationOptions,
         signal
       );
 

@@ -152,6 +152,7 @@ export const generateDoufangImage = async (
   model: string = 'gemini-2.5-flash-image',
   imageSize: '1K' | '2K' | '4K' = '1K',
   referenceImageDataUrls?: string[] | null,
+  customizationOptions?: CustomizationOptions,
   signal?: AbortSignal
 ): Promise<string> => {
   return retryWithBackoff(async () => {
@@ -193,7 +194,7 @@ export const generateDoufangImage = async (
 
         // Add prompt with reference image context
         parts.push({
-          text: getImageGenerationPromptWithReference(prompt)
+          text: getImageGenerationPromptWithReference(prompt, customizationOptions)
         });
       } else {
         // No reference image, use original prompt
