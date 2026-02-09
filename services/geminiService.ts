@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { 
+import {
   DOUFANG_SYSTEM_PROMPT,
   getDoufangSystemPromptWithReference,
   getReferenceImageAnalysisPrompt,
@@ -17,29 +17,29 @@ const getClient = (apiKey?: string) => {
   const userKey = apiKey?.trim();
   const envKey = process.env.API_KEY?.trim();
   const key = userKey || envKey;
-  
+
   if (!key) {
     throw new Error("API Key is missing. Please click the Settings icon to configure your Gemini API Key.");
   }
-  
+
   // Basic validation: API keys should be non-empty strings
   if (typeof key !== 'string' || key.length === 0) {
     throw new Error("Invalid API Key format. Please check your API Key configuration.");
   }
-  
+
   return new GoogleGenAI({ apiKey: key });
 };
 
 export const generateDoufangPrompt = async (
-  userKeyword: string, 
-  apiKey?: string, 
-  referenceImageDataUrl?: string | null,
+  userKeyword: string,
+  apiKey?: string,
+  referenceImageDataUrls?: string[] | null,
   customizationOptions?: CustomizationOptions,
   signal?: AbortSignal
 ): Promise<{ blessingPhrase: string; imagePrompt: string }> => {
   return retryWithBackoff(async () => {
     const ai = getClient(apiKey);
-    
+
     try {
       // Check if request was cancelled
       if (signal?.aborted) {
@@ -48,104 +48,88 @@ export const generateDoufangPrompt = async (
 
       // Prepare content parts
       const parts: GeminiContentPart[] = [];
-    
-    // Add reference image if provided - image should come first
-    if (referenceImageDataUrl) {
-      const imageData = processImageDataUrl(referenceImageDataUrl);
-      if (imageData && imageData.base64Data && imageData.mimeType) {
-        parts.push({
-          inlineData: {
-            mimeType: imageData.mimeType,
-            data: imageData.base64Data
-          }
-        });
-      } else {
-        // Fallback: try to use as-is (may fail, but attempt anyway)
-        const base64Data = referenceImageDataUrl.replace(/^data:image\/[^;]+;base64,/, '');
-        if (base64Data && base64Data.length > 0) {
-          console.warn('Reference image format may be incorrect, attempting to use as-is');
-          parts.push({
-            inlineData: {
-              mimeType: 'image/jpeg', // Default to JPEG
-              data: base64Data
+
+      // Add reference images if provided - images should come first
+      if (referenceImageDataUrls && referenceImageDataUrls.length > 0) {
+        for (const dataUrl of referenceImageDataUrls) {
+          const imageData = processImageDataUrl(dataUrl);
+          if (imageData && imageData.base64Data && imageData.mimeType) {
+            parts.push({
+              inlineData: {
+                mimeType: imageData.mimeType,
+                data: imageData.base64Data
+              }
+            });
+          } else {
+            // Fallback: try to use as-is
+            const base64Data = dataUrl.replace(/^data:image\/[^;]+;base64,/, '');
+            if (base64Data && base64Data.length > 0) {
+              parts.push({
+                inlineData: {
+                  mimeType: 'image/jpeg',
+                  data: base64Data
+                }
+              });
             }
+          }
+        }
+
+        // Add text instruction with reference image context and customization
+        const textPrompt = getReferenceImageAnalysisPrompt(userKeyword, customizationOptions);
+        if (textPrompt && textPrompt.trim()) {
+          parts.push({
+            text: textPrompt.trim()
           });
         } else {
-          // If image processing fails completely, skip the image and use text-only
-          console.warn('Failed to process reference image, proceeding without image');
+          throw new Error('Failed to generate prompt text');
+        }
+      } else {
+        // No reference image, use simple text with customization
+        const textPrompt = getSimpleUserInputPrompt(userKeyword, customizationOptions);
+        if (textPrompt && textPrompt.trim()) {
+          parts.push({
+            text: textPrompt.trim()
+          });
+        } else {
+          throw new Error('Failed to generate prompt text');
         }
       }
-      
-      // Add text instruction with reference image context and customization
-      const textPrompt = getReferenceImageAnalysisPrompt(userKeyword, customizationOptions);
-      if (textPrompt && textPrompt.trim()) {
-        parts.push({ 
-          text: textPrompt.trim()
-        });
-      } else {
-        throw new Error('Failed to generate prompt text');
-      }
-    } else {
-      // No reference image, use simple text with customization
-      const textPrompt = getSimpleUserInputPrompt(userKeyword, customizationOptions);
-      if (textPrompt && textPrompt.trim()) {
-        parts.push({ 
-          text: textPrompt.trim()
-        });
-      } else {
-        throw new Error('Failed to generate prompt text');
-      }
-    }
-    
-    // Validate parts array is not empty
-    if (parts.length === 0) {
-      throw new Error('No valid content parts to send to API');
-    }
-    
-    // Validate that all parts have required fields
-    for (let i = 0; i < parts.length; i++) {
-      const part = parts[i];
-      if (!part.text && !part.inlineData) {
-        throw new Error(`Part ${i} is missing both text and inlineData`);
-      }
-      if (part.inlineData && (!part.inlineData.data || !part.inlineData.mimeType)) {
-        throw new Error(`Part ${i} inlineData is missing data or mimeType`);
-      }
-      if (part.text && !part.text.trim()) {
-        throw new Error(`Part ${i} text is empty`);
-      }
-    }
-    
-    // Get system instruction based on whether reference image is provided and customization options
-    const systemInstruction = referenceImageDataUrl 
-      ? getDoufangSystemPromptWithReference(customizationOptions)
-      : (customizationOptions 
-        ? getDoufangSystemPromptWithCustomization(customizationOptions)
-        : DOUFANG_SYSTEM_PROMPT);
-    
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: {
-        parts: parts
-      },
-      config: {
-        systemInstruction: systemInstruction,
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            blessingPhrase: { type: Type.STRING },
-            imagePrompt: { type: Type.STRING }
-          },
-          required: ["blessingPhrase", "imagePrompt"]
-        }
-      }
-    });
 
-    const text = response.text;
-    if (!text) {
-      throw new Error("No response from Gemini");
-    }
+      // Validate parts array is not empty
+      if (parts.length === 0) {
+        throw new Error('No valid content parts to send to API');
+      }
+
+      // Get system instruction based on whether reference image is provided and customization options
+      const systemInstruction = (referenceImageDataUrls && referenceImageDataUrls.length > 0)
+        ? getDoufangSystemPromptWithReference(customizationOptions)
+        : (customizationOptions
+          ? getDoufangSystemPromptWithCustomization(customizationOptions)
+          : DOUFANG_SYSTEM_PROMPT);
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: {
+          parts: parts
+        },
+        config: {
+          systemInstruction: systemInstruction,
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              blessingPhrase: { type: Type.STRING },
+              imagePrompt: { type: Type.STRING }
+            },
+            required: ["blessingPhrase", "imagePrompt"]
+          }
+        }
+      });
+
+      const text = response.text;
+      if (!text) {
+        throw new Error("No response from Gemini");
+      }
 
       // Check if request was cancelled before parsing
       if (signal?.aborted) {
@@ -163,11 +147,11 @@ export const generateDoufangPrompt = async (
 };
 
 export const generateDoufangImage = async (
-  prompt: string, 
-  apiKey?: string, 
-  model: string = 'gemini-2.5-flash-image', 
-  imageSize: '1K' | '2K' | '4K' = '1K', 
-  referenceImageDataUrl?: string | null,
+  prompt: string,
+  apiKey?: string,
+  model: string = 'gemini-2.5-flash-image',
+  imageSize: '1K' | '2K' | '4K' = '1K',
+  referenceImageDataUrls?: string[] | null,
   signal?: AbortSignal
 ): Promise<string> => {
   return retryWithBackoff(async () => {
@@ -179,12 +163,8 @@ export const generateDoufangImage = async (
     }
 
     let config: Record<string, unknown> = {};
-  
-    // Different models have different support for imageConfig
-    // Flash model does NOT support imageConfig parameter - it will cause 400 errors
-    // Only Pro model supports imageConfig with custom sizes
+
     if (model === 'gemini-3-pro-image-preview') {
-      // Pro model supports all sizes (1K, 2K, 4K)
       config = {
         imageConfig: {
           aspectRatio: "1:1",
@@ -192,55 +172,41 @@ export const generateDoufangImage = async (
         }
       };
     }
-    // For Flash model: Do NOT set imageConfig at all
-    // Flash model only supports default 1K (1024x1024) resolution
-    // Setting imageConfig will cause 400 INVALID_ARGUMENT error
 
     try {
       // Prepare content parts
       const parts: GeminiContentPart[] = [];
-    
-    // Add reference image if provided - image should come first
-    // Note: The prompt already contains style guidance from the reference image
-    // (generated in generateDoufangPrompt), so we just need to provide the image
-    // as additional visual reference for the image generation model
-    if (referenceImageDataUrl) {
-      const imageData = processImageDataUrl(referenceImageDataUrl);
-      if (imageData) {
-        parts.push({
-          inlineData: {
-            mimeType: imageData.mimeType,
-            data: imageData.base64Data
+
+      // Add reference images if provided
+      if (referenceImageDataUrls && referenceImageDataUrls.length > 0) {
+        for (const dataUrl of referenceImageDataUrls) {
+          const imageData = processImageDataUrl(dataUrl);
+          if (imageData) {
+            parts.push({
+              inlineData: {
+                mimeType: imageData.mimeType,
+                data: imageData.base64Data
+              }
+            });
           }
+        }
+
+        // Add prompt with reference image context
+        parts.push({
+          text: getImageGenerationPromptWithReference(prompt)
         });
       } else {
-        // Fallback: try to use as-is (may fail, but attempt anyway)
-        console.warn('Reference image format may be incorrect, attempting to use as-is');
-        parts.push({
-          inlineData: {
-            mimeType: 'image/jpeg', // Default to JPEG
-            data: referenceImageDataUrl.replace(/^data:image\/[^;]+;base64,/, '')
-          }
-        });
+        // No reference image, use original prompt
+        parts.push({ text: prompt });
       }
-      
-      // Add prompt with reference image context
-      // The prompt already includes style guidance, so we just reinforce it
-      parts.push({ 
-        text: getImageGenerationPromptWithReference(prompt)
-      });
-    } else {
-      // No reference image, use original prompt
-      parts.push({ text: prompt });
-    }
 
-    const response = await ai.models.generateContent({
-      model: model,
-      contents: {
-        parts: parts
-      },
-      config: Object.keys(config).length > 0 ? config : undefined
-    });
+      const response = await ai.models.generateContent({
+        model: model,
+        contents: {
+          parts: parts
+        },
+        config: Object.keys(config).length > 0 ? config : undefined
+      });
 
       // Check if request was cancelled before processing response
       if (signal?.aborted) {
@@ -259,9 +225,9 @@ export const generateDoufangImage = async (
       if (signal?.aborted) {
         throw new Error('Request cancelled');
       }
-      
+
       const error = handleApiError(e, 'generateDoufangImage');
-      
+
       // Add specific context for image size errors
       if (error.code === 'INVALID_REQUEST') {
         if (model === 'gemini-2.5-flash-image') {
@@ -270,7 +236,7 @@ export const generateDoufangImage = async (
           error.userMessage = '4K 解析度可能不被此模型或您的 API 方案支援，請嘗試 2K 或 1K。';
         }
       }
-      
+
       throw error;
     }
   });

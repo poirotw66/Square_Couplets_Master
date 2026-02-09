@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import type { CustomizationOptions, ArtStyle, ColorTheme, CalligraphyStyle, DecorationLevel } from '../types';
+import type { CustomizationOptions, ArtStyle, ColorTheme, CalligraphyStyle, DecorationLevel, ReferenceImageMode } from '../types';
 import { OptionGroup } from './OptionGroup';
 
 interface CustomizationPanelProps {
   options: CustomizationOptions;
   onChange: (options: CustomizationOptions) => void;
   disabled?: boolean;
+  hasReferenceImage?: boolean;
 }
 
-export const CustomizationPanel: React.FC<CustomizationPanelProps> = ({ 
-  options, 
-  onChange, 
-  disabled = false 
+export const CustomizationPanel: React.FC<CustomizationPanelProps> = ({
+  options,
+  onChange,
+  disabled = false,
+  hasReferenceImage = false
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isComposingBlessing, setIsComposingBlessing] = useState(false);
@@ -28,9 +30,9 @@ export const CustomizationPanel: React.FC<CustomizationPanelProps> = ({
     value: CustomizationOptions[K]
   ) => {
     // Create new options object with updated value
-    const newOptions: CustomizationOptions = { 
-      ...options, 
-      [key]: value 
+    const newOptions: CustomizationOptions = {
+      ...options,
+      [key]: value
     };
     // Call onChange to update parent state
     onChange(newOptions);
@@ -136,10 +138,10 @@ export const CustomizationPanel: React.FC<CustomizationPanelProps> = ({
         aria-label="Toggle customization options"
       >
         <div className="flex items-center gap-3">
-          <svg 
+          <svg
             className={`w-5 h-5 text-amber-500/60 group-hover:text-amber-400 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
-            fill="none" 
-            stroke="currentColor" 
+            fill="none"
+            stroke="currentColor"
             viewBox="0 0 24 24"
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
@@ -217,9 +219,68 @@ export const CustomizationPanel: React.FC<CustomizationPanelProps> = ({
             gridCols="3"
           />
 
+          {/* Reference Image Mode - Only show when reference image is provided */}
+          {hasReferenceImage && (
+            <div>
+              <label className="block text-amber-200/80 text-sm font-bold mb-3">
+                參考圖片模式
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => updateOption('referenceImageMode', 'preserve')}
+                  disabled={disabled}
+                  className={`relative p-4 rounded-xl border-2 transition-all duration-300 text-left ${(options.referenceImageMode ?? 'preserve') === 'preserve'
+                      ? 'border-amber-500/60 bg-amber-500/10 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
+                      : 'border-amber-900/40 bg-black/20 hover:border-amber-500/40 hover:bg-amber-500/5'
+                    } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <span className="text-amber-100 font-bold text-sm">保留原樣</span>
+                  </div>
+                  <p className="text-xs text-amber-500/60">
+                    保留參考圖片的主體、姿勢和構圖，直接轉換為斗方格式
+                  </p>
+                  {(options.referenceImageMode ?? 'preserve') === 'preserve' && (
+                    <div className="absolute top-2 right-2 w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => updateOption('referenceImageMode', 'reimagine')}
+                  disabled={disabled}
+                  className={`relative p-4 rounded-xl border-2 transition-all duration-300 text-left ${options.referenceImageMode === 'reimagine'
+                      ? 'border-amber-500/60 bg-amber-500/10 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
+                      : 'border-amber-900/40 bg-black/20 hover:border-amber-500/40 hover:bg-amber-500/5'
+                    } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    <span className="text-amber-100 font-bold text-sm">重新設計</span>
+                  </div>
+                  <p className="text-xs text-amber-500/60">
+                    參考原圖風格，創作全新的姿勢、角度或構圖變化
+                  </p>
+                  {options.referenceImageMode === 'reimagine' && (
+                    <div className="absolute top-2 right-2 w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
+                  )}
+                </button>
+              </div>
+              <p className="mt-2 text-xs text-amber-500/40">
+                💡 「保留原樣」會盡量保持參考圖片的外觀；「重新設計」會創作風格相似但姿勢不同的新圖案
+              </p>
+            </div>
+          )}
+
           {/* Custom Blessing Phrase (Optional) */}
           <div>
-            <label 
+            <label
               htmlFor="custom-blessing-phrase"
               className="block text-amber-200/80 text-sm font-bold mb-3"
             >
@@ -280,7 +341,7 @@ export const CustomizationPanel: React.FC<CustomizationPanelProps> = ({
 
           {/* Custom Style Description (Optional) */}
           <div>
-            <label 
+            <label
               htmlFor="custom-style-description"
               className="block text-amber-200/80 text-sm font-bold mb-3"
             >

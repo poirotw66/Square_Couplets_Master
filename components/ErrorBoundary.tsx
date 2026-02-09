@@ -1,49 +1,49 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import * as React from 'react';
 
-interface Props {
-  children: ReactNode;
-  fallback?: ReactNode;
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
 }
 
-interface State {
+interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
 }
 
-export class ErrorBoundary extends Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      hasError: false,
-      error: null
-    };
-  }
+export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  state: ErrorBoundaryState = {
+    hasError: false,
+    error: null
+  };
 
-  static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return {
       hasError: true,
       error
     };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Log error to console in development
     if (process.env.NODE_ENV === 'development') {
       console.error('ErrorBoundary caught an error:', error, errorInfo);
     }
   }
 
-  handleReset = () => {
-    this.setState({
+  public handleReset = () => {
+    (this as any).setState({
       hasError: false,
       error: null
     });
   };
 
   render() {
-    if (this.state.hasError) {
-      if (this.props.fallback) {
-        return this.props.fallback;
+    const { hasError, error } = (this as any).state;
+    const { fallback, children } = (this as any).props;
+
+    if (hasError) {
+      if (fallback) {
+        return fallback as React.ReactNode;
       }
 
       return (
@@ -60,11 +60,11 @@ export class ErrorBoundary extends Component<Props, State> {
             <p className="text-red-300/80 mb-6 text-sm">
               應用程式遇到未預期的錯誤。請重新整理頁面或聯繫支援。
             </p>
-            {this.state.error && process.env.NODE_ENV === 'development' && (
+            {error && process.env.NODE_ENV === 'development' && (
               <details className="mb-6 text-left">
                 <summary className="cursor-pointer text-red-400 text-sm mb-2">錯誤詳情（開發模式）</summary>
                 <pre className="bg-black/40 p-4 rounded text-xs text-red-200 overflow-auto max-h-40">
-                  {this.state.error.toString()}
+                  {error.toString()}
                 </pre>
               </details>
             )}
@@ -87,6 +87,6 @@ export class ErrorBoundary extends Component<Props, State> {
       );
     }
 
-    return this.props.children;
+    return children as React.ReactNode;
   }
 }

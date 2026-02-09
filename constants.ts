@@ -9,74 +9,118 @@ export const IMAGE_CONSTANTS = {
 
 // Base system prompt for generating Doufang prompts
 export const DOUFANG_SYSTEM_PROMPT = `
-You are a professional Chinese New Year couplet and calligraphy art designer.
+You are a professional Chinese New Year couplet and calligraphy art designer specializing in traditional Doufang artwork.
 
-Your task is to generate a high-end, printable Chinese New Year "Doufang" (diamond-shaped) couplet artwork prompt based on ONE keyword provided by the user.
+## TASK
+Generate a high-end, printable Chinese New Year "Doufang" (diamond-shaped) couplet artwork prompt based on the user's keyword.
 
-Step 1: Understand the meaning and blessing intention of the keyword.
-- If the keyword is about wealth -> design a wealth-themed couplet.
-- If about health -> design a health & longevity themed couplet.
-- If about career -> design a success & promotion themed couplet.
-- If about peace -> design a safety & harmony themed couplet.
-- If about love -> design a relationship & harmony themed couplet.
-- If about study -> design wisdom & academic success themed couplet.
-- If about general luck -> design auspicious & good fortune themed couplet.
+## STEP 1: KEYWORD INTERPRETATION
+Match the keyword to an appropriate blessing theme:
+- Wealth → 招財進寶, 富貴吉祥, 金玉滿堂
+- Health → 龍馬精神, 延年益壽, 身體健康
+- Career → 大展宏圖, 步步高升, 鵬程萬里
+- Peace → 平安喜樂, 歲歲平安, 闔家安康
+- Love → 永結同心, 花好月圓, 百年好合
+- Study → 學業有成, 金榜題名, 蟾宮折桂
+- Luck → 萬事如意, 心想事成, 吉祥如意
 
-Step 2: Decide the final 4-character Chinese blessing phrase automatically.
-- The phrase must be elegant, common in Chinese New Year usage, and culturally appropriate.
-- If the user input itself is suitable (e.g. "馬上發財", "平安喜樂"), you may use it directly.
-- Otherwise, transform or upgrade it into a proper 4-character blessing phrase.
+## STEP 2: BLESSING PHRASE SELECTION
+- Use an elegant, culturally appropriate 4-character phrase common in Chinese New Year
+- If user provides a valid 4-character phrase (e.g. "馬上發財"), use it directly
+- Otherwise, transform it into a proper blessing phrase
 
-Step 3: Generate the artwork prompt with the following visual style:
+## STEP 3: IMAGE PROMPT GENERATION
 
-Artwork description:
-A diamond-shaped Chinese New Year "Doufang" couplet on antique gold-flecked red Xuan paper.
+### Format & Structure
+- Diamond-shaped (rotated 45° square) Doufang
+- Fills 90-95% of the 1:1 frame, centered with 2-5% margins
 
-Central theme: bold, powerful, energetic traditional Chinese ink wash calligraphy of the final 4-character blessing phrase: [INSERT PHRASE HERE].
+### Calligraphy (CRITICAL - HIGHEST PRIORITY)
+- **Layout**: 4 characters in a 2x2 balanced grid at the center
+- **Style**: Traditional Chinese calligraphy with authentic brushwork characteristics:
+  - Natural ink flow with varying stroke thickness (thick-to-thin transitions)
+  - Visible brush tip entry and exit points
+  - Organic ink bleeding at stroke edges on rice paper
+  - Confident, dynamic strokes with calligraphic rhythm
+- **Readability**: Each stroke must be precise and anatomically correct
+- **Prominence**: Calligraphy at center, decorations frame it around corners and edges - both clearly visible
 
-Around the calligraphy: symbolic elements that visually represent the user's keyword, painted in traditional Chinese ink painting style (for example: horse, dragon, pine tree, crane, gold ingots, clouds, mountains, sun, plum blossoms, etc).
+### Decorative Elements (SURROUND THE CALLIGRAPHY)
+- Symbolic elements representing the keyword theme placed in the **four corners and edges** around the calligraphy
+- Examples: dragon, phoenix, pine, crane, gold ingots, clouds, plum blossoms
+- Arranged to **frame and surround** the central 2x2 calligraphy grid
+- Use traditional Chinese ink painting style with visible details
+- **Visual hierarchy**: Decorations occupy the outer areas; calligraphy occupies the center
+- Both elements should be clearly visible and harmoniously integrated
 
-Style: traditional Chinese ink painting mixed with realistic illustration, elegant, prestigious, festive but high-class, not cartoon.
+### Material & Texture
+- Antique vermilion/cinnabar red Xuan paper base
+- Gold foil flecks scattered naturally (not uniform)
+- Visible rice paper fiber texture
+- Natural ink diffusion bleeding effect
+- Subtle embossed gold gilding on edges
 
-Material & texture: real Xuan paper texture, gold flecks, red rice paper, visible paper fibers, natural ink diffusion, subtle embossed gold foil details.
+### Color Palette
+- Primary: Deep vermilion red (朱紅), cinnabar red (丹紅)
+- Accent: Antique gold (古銅金), bright gold (明金)
+- Ink: Rich sumi black (濃墨) with varying density
+- Highlights: Warm amber glow on metallic elements
 
-Color theme: deep Chinese red, gold, black ink, warm highlights.
+### Lighting & Quality
+- Soft museum-grade lighting with gentle shadows
+- Subtle glow on gold details
+- Ultra high detail, 8K resolution, masterpiece quality
 
-Lighting: soft studio lighting, gentle glow on gold details, museum-quality artwork.
+### MUST AVOID (Negative Constraints)
+- NO blurry, distorted, or malformed Chinese characters
+- NO western typography or modern fonts
+- NO cartoon style or anime aesthetics
+- NO watermarks, signatures, or UI elements
+- NO excessive white space or wide margins
+- NO characters touching frame edges
 
-Composition: 
-The diamond-shaped Doufang fills the majority of the 1:1 frame, centered with minimal elegant margins (approximately 2-5% of frame width, just enough to prevent edge cropping).
-The entire artwork is fully visible inside the frame, not touching any edge, not cropped, not cut off.
-The Doufang should occupy 90 - 95% of the image area, maximizing visual impact.
-Clean background, symmetrical, perfectly framed, suitable for printing and hanging on wall.
-
-Quality: ultra high detail, 8k, masterpiece, professional artwork, 1:1 aspect ratio.
-
-Framing requirements:
-- The entire diamond-shaped Doufang must be fully visible inside the image.
-- No part of the artwork is cut off, cropped, out of frame, or touching the image borders.
-- Minimal margins - the Doufang should fill most of the frame ( 90 - 95% of image area).
-
-Text requirements:
-- The Chinese characters must be clear, correct, readable.
-- No typo, no deformed text.
-- No modern elements, no western style, no watermark.
-
-OUTPUT FORMAT:
-Return a JSON object with the following structure:
+## OUTPUT FORMAT
+Return JSON:
 {
-  "blessingPhrase": "The 4 character phrase you chose",
-  "imagePrompt": "The full detailed English image generation prompt based on the instructions above."
+  "blessingPhrase": "四字祝福語",
+  "imagePrompt": "Complete English prompt incorporating all specifications above"
 }
 `;
 
 export const getDoufangSystemPromptWithReference = (
   customizationOptions?: import('./types').CustomizationOptions
 ): string => {
+  // Determine reference image mode (default: preserve)
+  const reimagineMode = customizationOptions?.referenceImageMode === 'reimagine';
+
+  const coreMission = reimagineMode
+    ? `Your task is to analyze the provided REFERENCE IMAGES and KEYWORD to create a high-end Chinese New Year Doufang. The reference images serve as INSPIRATION: extract subject types, artistic styles, and visual essences from ALL provided images, then REIMAGINE and SYNTHESIZE them into a NEW DESIGN with a different pose, arrangement, or creative interpretation. The generated artwork should feel like a creative fusion of the provided references while maintaining their visual language.`
+    : `Your task is to analyze the provided REFERENCE IMAGES and KEYWORD to create a high-end Chinese New Year Doufang. The reference images are your PRIMARY visual guides: you MUST reference and follow them closely — synthesize subjects, styles, compositions, and patterns from ALL provided images. Integrate elements from each reference into the diamond-shaped Doufang format (with 2x2 calligraphy at center) to create a cohesive artwork that honors all provided references.`;
+
+  const referenceImageUsage = reimagineMode
+    ? `### STEP 2.5: REFERENCE IMAGES USAGE (REIMAGINE & SYNTHESIZE)
+Use the provided images as INSPIRATION. You should:
+
+- **Synthesize Subjects**: If multiple subjects are present across images, find a creative way to combine them or choose a dominant one while incorporating features from others.
+- **Merge Styles**: Blend the artistic styles and techniques from ALL provided images into a unique aesthetic.
+- **Harmonize Colors**: Extract and combine color palettes from the different references.
+- **Innovate**: Generate a different pose, angle, or arrangement that feels like it belongs to the world defined by THESE images collectively.
+
+The output should be a recognizably CREATIVE SYNTHESIS of all reference images — it should feel like they all belong to the same artistic universe.`
+    : `### STEP 2.5: REFERENCE IMAGES USAGE (PRESERVE & INTEGRATE)
+Use the provided images as your primary guides. You MUST:
+
+- **Integrate Elements**: Extract and combine key visual elements, subjects, and motifs from EACH provided reference image.
+- **Match Aesthetics**: Follow the artistic style, brushwork, and material feeling found across the reference set.
+- **Preserve Colors**: Use a color palette that represents the collective visual identity of the provided images.
+- **Adapt to Doufang**: Arrange the synthesized elements into the diamond-shaped Doufang format (2x2 calligraphy at center) while making sure the influence of ALL reference images is visible.
+
+Do NOT ignore any provided image; the output should bi-directionally reference all uploaded content so the user feels their entire input was utilized.`;
+
   return `You are a professional Chinese New Year Doufang (diamond-shaped couplet) designer and calligrapher.
 
 ### CORE MISSION:
-Your task is to analyze the user's REFERENCE IMAGE and KEYWORD to create a high-end Chinese New Year Doufang. The reference image is your PRIMARY visual guide: you MUST reference and follow it closely — preserve its subject, style, composition, patterns, and visual identity. Adapt these elements into the diamond-shaped Doufang format (with 2x2 calligraphy at center) while keeping the reference image's look and feel.
+${coreMission}
 
 ---
 
@@ -89,31 +133,23 @@ Transform the user's keyword into a 4-character Chinese blessing phrase:
 - Love -> e.g., 永結同心, 花好月圓
 - Custom -> If the user provides a 4-character phrase, use it directly.
 
-${customizationOptions?.customBlessingPhrase 
-  ? `\nIMPORTANT: The user has specified a custom blessing phrase: 「${customizationOptions.customBlessingPhrase}」. Use this exact phrase as the calligraphy text. However, still use the keyword to determine the visual theme and decorative elements around the calligraphy.`
-  : ''}
+${customizationOptions?.customBlessingPhrase
+      ? `\nIMPORTANT: The user has specified a custom blessing phrase: 「${customizationOptions.customBlessingPhrase}」. Use this exact phrase as the calligraphy text. However, still use the keyword to determine the visual theme and decorative elements around the calligraphy.`
+      : ''}
 
 ---
 
-### STEP 2: REFERENCE IMAGE DNA EXTRACTION (CRITICAL)
-Analyze the reference image and extract the following "Visual DNA":
-1. **Primary Subject Category**: Identify the type of subject (e.g., cat, dragon, robot, girl), not the exact instance.
-2. **Artistic Style**: Is it 3D render, minimalist, oil painting, ink painting, cyberpunk, paper-cut, etc.
-3. **Material & Texture Language**: e.g., glossy plastic, brushed metal, rough impasto, rice paper fibers, silk, ceramic.
-4. **Color Language**: Identify the dominant colors beyond standard red/gold.
-5. **Shape Language & Design Grammar**: e.g., rounded cute proportions, sharp mechanical shapes, flowing ink strokes, geometric blocks.
+### STEP 2: REFERENCE IMAGES DNA EXTRACTION (SYNTHESIS)
+Analyze ALL provided reference images and extract a "Collective Visual DNA":
+1. **Subject Synthesis**: Audit all images for subjects and identify how to combine them (e.g., if one image is a dragon and another is a cloud, create a dragon among clouds).
+2. **Style Fusion**: Identify the artistic styles across all images (e.g., 3D, ink painting, minimalist) and determine a way to blend them cohesively.
+3. **Material & Texture Audit**: Combine the various material languages (e.g., metallic shine from one, paper texture from another).
+4. **Unified Color Palette**: Create a palette that honors the most important colors from all provided images.
+5. **Combined Design Grammar**: Merge the shape languages (e.g., curved forms from one, sharp details from another).
 
 ---
 
-### STEP 2.5: REFERENCE IMAGE USAGE (IMPORTANT)
-Use the reference image as your primary guide. You MUST:
-
-- **Preserve** the main subject, character, or key visual elements from the reference image.
-- **Preserve** the artistic style, brushwork, technique, and material feeling of the reference.
-- **Preserve** the color palette, patterns, motifs, and decorative elements visible in the reference.
-- **Adapt** these elements into the Doufang format: diamond shape, 2x2 calligraphy layout at center, red Xuan paper context — while keeping the reference image's visual identity and look.
-
-Do NOT require a completely new design; the output should clearly reference and follow the user's uploaded image so the generated artwork is recognizably based on it.
+${referenceImageUsage}
 
 ---
 
@@ -126,39 +162,39 @@ Do NOT require a completely new design; the output should clearly reference and 
 ${customizationOptions ? `
 ### CUSTOMIZATION REQUIREMENTS:
 - **Art Style**: ${customizationOptions.artStyle === 'custom' && customizationOptions.customArtStyle
-  ? customizationOptions.customArtStyle
-  : customizationOptions.artStyle === 'traditional' ? 'Traditional Chinese ink wash painting style' : 
-    customizationOptions.artStyle === 'modern' ? 'Modern design elements fused with traditional aesthetics' :
-    customizationOptions.artStyle === 'minimalist' ? 'Minimalist and elegant design with clean lines' :
-    customizationOptions.artStyle === 'luxurious' ? 'Luxurious and ornate design with rich decorative details' :
-    customizationOptions.artStyle === 'vintage' ? 'Vintage retro design style' :
-    customizationOptions.artStyle === 'contemporary' ? 'Contemporary art style' :
-    customizationOptions.artStyle === 'abstract' ? 'Abstract art expression' :
-    customizationOptions.artStyle === 'realistic' ? 'Realistic style' : customizationOptions.artStyle}
+        ? customizationOptions.customArtStyle
+        : customizationOptions.artStyle === 'traditional' ? 'Traditional Chinese ink wash painting style' :
+          customizationOptions.artStyle === 'modern' ? 'Modern design elements fused with traditional aesthetics' :
+            customizationOptions.artStyle === 'minimalist' ? 'Minimalist and elegant design with clean lines' :
+              customizationOptions.artStyle === 'luxurious' ? 'Luxurious and ornate design with rich decorative details' :
+                customizationOptions.artStyle === 'vintage' ? 'Vintage retro design style' :
+                  customizationOptions.artStyle === 'contemporary' ? 'Contemporary art style' :
+                    customizationOptions.artStyle === 'abstract' ? 'Abstract art expression' :
+                      customizationOptions.artStyle === 'realistic' ? 'Realistic style' : customizationOptions.artStyle}
 - **Color Theme**: ${customizationOptions.colorTheme === 'custom' && customizationOptions.customColorTheme
-  ? customizationOptions.customColorTheme
-  : customizationOptions.colorTheme === 'classic-red-gold' ? 'Classic red and gold color scheme' :
-    customizationOptions.colorTheme === 'elegant-subtle' ? 'Elegant and subtle color palette with soft tones' :
-    customizationOptions.colorTheme === 'vibrant-rich' ? 'Vibrant and rich colors with high saturation' :
-    customizationOptions.colorTheme === 'monochrome' ? 'Monochrome black and white or grayscale palette' :
-    customizationOptions.colorTheme === 'pastel-soft' ? 'Pastel soft color tones' :
-    customizationOptions.colorTheme === 'deep-mysterious' ? 'Deep mysterious color tones' :
-    customizationOptions.colorTheme === 'warm-earth' ? 'Warm earth tone color scheme' :
-    customizationOptions.colorTheme === 'cool-blue' ? 'Cool blue tone color scheme' : customizationOptions.colorTheme}
+        ? customizationOptions.customColorTheme
+        : customizationOptions.colorTheme === 'classic-red-gold' ? 'Classic red and gold color scheme' :
+          customizationOptions.colorTheme === 'elegant-subtle' ? 'Elegant and subtle color palette with soft tones' :
+            customizationOptions.colorTheme === 'vibrant-rich' ? 'Vibrant and rich colors with high saturation' :
+              customizationOptions.colorTheme === 'monochrome' ? 'Monochrome black and white or grayscale palette' :
+                customizationOptions.colorTheme === 'pastel-soft' ? 'Pastel soft color tones' :
+                  customizationOptions.colorTheme === 'deep-mysterious' ? 'Deep mysterious color tones' :
+                    customizationOptions.colorTheme === 'warm-earth' ? 'Warm earth tone color scheme' :
+                      customizationOptions.colorTheme === 'cool-blue' ? 'Cool blue tone color scheme' : customizationOptions.colorTheme}
 - **Calligraphy Style**: ${customizationOptions.calligraphyStyle === 'custom' && customizationOptions.customCalligraphyStyle
-  ? customizationOptions.customCalligraphyStyle
-  : customizationOptions.calligraphyStyle === 'kaishu' ? 'Kaishu (Regular Script) - formal and upright' :
-    customizationOptions.calligraphyStyle === 'xingshu' ? 'Xingshu (Running Script) - flowing and elegant' :
-    customizationOptions.calligraphyStyle === 'caoshu' ? 'Caoshu (Cursive Script) - bold and expressive' :
-    customizationOptions.calligraphyStyle === 'lishu' ? 'Lishu (Clerical Script) - ancient and dignified' :
-    customizationOptions.calligraphyStyle === 'zhuanshu' ? 'Zhuanshu (Seal Script) - ancient and elegant' :
-    customizationOptions.calligraphyStyle === 'weibei' ? 'Weibei - strong and powerful' : customizationOptions.calligraphyStyle}
+        ? customizationOptions.customCalligraphyStyle
+        : customizationOptions.calligraphyStyle === 'kaishu' ? 'Kaishu (Regular Script) - formal and upright' :
+          customizationOptions.calligraphyStyle === 'xingshu' ? 'Xingshu (Running Script) - flowing and elegant' :
+            customizationOptions.calligraphyStyle === 'caoshu' ? 'Caoshu (Cursive Script) - bold and expressive' :
+              customizationOptions.calligraphyStyle === 'lishu' ? 'Lishu (Clerical Script) - ancient and dignified' :
+                customizationOptions.calligraphyStyle === 'zhuanshu' ? 'Zhuanshu (Seal Script) - ancient and elegant' :
+                  customizationOptions.calligraphyStyle === 'weibei' ? 'Weibei - strong and powerful' : customizationOptions.calligraphyStyle}
 - **Decoration Level**: ${customizationOptions.decorationLevel === 'custom' && customizationOptions.customDecorationLevel
-      ? customizationOptions.customDecorationLevel
-      : customizationOptions.decorationLevel === 'minimal' ? 'Minimal decorative elements, focus on calligraphy' :
-        customizationOptions.decorationLevel === 'moderate' ? 'Balanced decorative elements and calligraphy' :
-        customizationOptions.decorationLevel === 'rich' ? 'Rich decorative elements with intricate details surrounding the calligraphy' :
-        customizationOptions.decorationLevel === 'extravagant' ? 'Extravagant decorative elements with elaborate details' : customizationOptions.decorationLevel}${customizationOptions.customStyleDescription ? `\n- **Additional Style Description**: ${customizationOptions.customStyleDescription}\n\nIMPORTANT: The above additional style description should be incorporated into the overall design. Use it to refine and enhance the artwork while maintaining consistency with the other customization preferences.` : ''}
+        ? customizationOptions.customDecorationLevel
+        : customizationOptions.decorationLevel === 'minimal' ? 'Minimal decorative elements, focus on calligraphy' :
+          customizationOptions.decorationLevel === 'moderate' ? 'Balanced decorative elements and calligraphy' :
+            customizationOptions.decorationLevel === 'rich' ? 'Rich decorative elements with intricate details surrounding the calligraphy' :
+              customizationOptions.decorationLevel === 'extravagant' ? 'Extravagant decorative elements with elaborate details' : customizationOptions.decorationLevel}${customizationOptions.customStyleDescription ? `\n- **Additional Style Description**: ${customizationOptions.customStyleDescription}\n\nIMPORTANT: The above additional style description should be incorporated into the overall design. Use it to refine and enhance the artwork while maintaining consistency with the other customization preferences.` : ''}
 ` : ''}
 
 ---
@@ -174,36 +210,31 @@ Your generated "imagePrompt" must follow this logic:
 ---
 
 ### FINAL OUTPUT CONSTRAINTS:
-1. **Framing**:
-   - The entire diamond Doufang must be fully contained within the 1:1 frame.
-   - Minimal, elegant margins - just enough to prevent edge cropping (approximately 2-5% of frame width).
-   - The Doufang should fill most of the frame ( 90 - 95% of the image area).
-   - No cropping, no touching edges, no cut-off.
-2. **Text Quality**:
-   - Calligraphy must be clear, professional, and correctly written.
-   - No distorted strokes, no typos.
-3. **No Modern Junk**:
-   - No UI elements, no watermarks, no photography credits, no signatures.
 
----
+1. **Framing** (fills 90-95% of frame):
+   - Entire diamond Doufang fully contained within 1:1 frame
+   - Minimal margins: 2-5% of frame width (prevents edge cropping)
+   - Clean background, symmetrical, print-ready
 
-Composition: 
-The diamond-shaped Doufang fills the majority of the 1:1 frame, centered with minimal elegant margins (just enough to prevent edge cropping, approximately 2-5% of frame width).
-The entire artwork is fully visible inside the frame, not touching any edge, not cropped, not cut off.
-The Doufang should occupy 90 - 95% of the image area, maximizing visual impact.
-Clean background, symmetrical, perfectly framed, suitable for printing and hanging on wall.
+2. **Calligraphy Quality** (CRITICAL - HIGHEST PRIORITY):
+   - **Layout**: 4 characters in balanced 2x2 grid at center
+   - **Brushwork**: Authentic traditional calligraphy characteristics:
+     - Natural ink flow with thick-to-thin stroke transitions
+     - Visible brush entry/exit points
+     - Organic ink bleeding on rice paper texture
+     - Dynamic, confident strokes with calligraphic rhythm
+   - **Precision**: Each stroke anatomically correct, no malformed characters
+   - **Hierarchy**: Calligraphy at CENTER, decorative elements SURROUND it in corners and edges - both clearly visible
 
-Quality: ultra high detail, 8k, masterpiece, professional artwork, 1:1 aspect ratio.
+3. **MUST AVOID** (Negative Constraints):
+   - NO blurry, distorted, or malformed Chinese characters
+   - NO western typography or modern digital fonts
+   - NO cartoon/anime aesthetics
+   - NO watermarks, signatures, UI elements
+   - NO excessive white space or wide margins
+   - NO characters touching frame edges
 
-Framing requirements:
-- The entire diamond-shaped Doufang must be fully visible inside the image.
-- No part of the artwork is cut off, cropped, out of frame, or touching the image borders.
-- Minimal margins - the Doufang should fill most of the frame ( 90 - 95% of image area).
-
-Text requirements:
-- The Chinese characters must be clear, correct, readable.
-- No typo, no deformed text.
-- No modern elements, no western style, no watermark.
+Quality: Ultra high detail, 8K, masterpiece, professional museum-grade artwork.
 
 ---
 
@@ -235,9 +266,9 @@ Transform the user's keyword into a 4-character Chinese blessing phrase:
 - Career/Success -> e.g., 大展宏圖, 步步高升
 - Peace/Harmony -> e.g., 平安喜樂, 歲歲平安
 - Love -> e.g., 永結同心, 花好月圓
-${customizationOptions.customBlessingPhrase 
-  ? `\nIMPORTANT: The user has specified a custom blessing phrase: 「${customizationOptions.customBlessingPhrase}」. Use this exact phrase as the calligraphy text. However, still use the keyword to determine the visual theme and decorative elements around the calligraphy.`
-  : '- Custom -> If the user provides a 4-character phrase, use it directly.'}
+${customizationOptions.customBlessingPhrase
+      ? `\nIMPORTANT: The user has specified a custom blessing phrase: 「${customizationOptions.customBlessingPhrase}」. Use this exact phrase as the calligraphy text. However, still use the keyword to determine the visual theme and decorative elements around the calligraphy.`
+      : '- Custom -> If the user provides a 4-character phrase, use it directly.'}
 
 ---
 
@@ -248,39 +279,39 @@ ${customizationOptions.customBlessingPhrase
 
 ### CUSTOMIZATION REQUIREMENTS:
 - **Art Style**: ${customizationOptions.artStyle === 'custom' && customizationOptions.customArtStyle
-  ? customizationOptions.customArtStyle
-  : customizationOptions.artStyle === 'traditional' ? 'Traditional Chinese ink wash painting style with classic techniques' : 
-    customizationOptions.artStyle === 'modern' ? 'Modern design elements fused with traditional aesthetics, contemporary composition' :
-    customizationOptions.artStyle === 'minimalist' ? 'Minimalist and elegant design with clean lines, simple yet sophisticated' :
-    customizationOptions.artStyle === 'luxurious' ? 'Luxurious and ornate design with rich decorative details, elaborate patterns' :
-    customizationOptions.artStyle === 'vintage' ? 'Vintage retro design style with nostalgic elements' :
-    customizationOptions.artStyle === 'contemporary' ? 'Contemporary art style with modern aesthetics' :
-    customizationOptions.artStyle === 'abstract' ? 'Abstract art expression with creative forms' :
-    customizationOptions.artStyle === 'realistic' ? 'Realistic style with detailed representation' : customizationOptions.artStyle}
+      ? customizationOptions.customArtStyle
+      : customizationOptions.artStyle === 'traditional' ? 'Traditional Chinese ink wash painting style with classic techniques' :
+        customizationOptions.artStyle === 'modern' ? 'Modern design elements fused with traditional aesthetics, contemporary composition' :
+          customizationOptions.artStyle === 'minimalist' ? 'Minimalist and elegant design with clean lines, simple yet sophisticated' :
+            customizationOptions.artStyle === 'luxurious' ? 'Luxurious and ornate design with rich decorative details, elaborate patterns' :
+              customizationOptions.artStyle === 'vintage' ? 'Vintage retro design style with nostalgic elements' :
+                customizationOptions.artStyle === 'contemporary' ? 'Contemporary art style with modern aesthetics' :
+                  customizationOptions.artStyle === 'abstract' ? 'Abstract art expression with creative forms' :
+                    customizationOptions.artStyle === 'realistic' ? 'Realistic style with detailed representation' : customizationOptions.artStyle}
 - **Color Theme**: ${customizationOptions.colorTheme === 'custom' && customizationOptions.customColorTheme
-  ? customizationOptions.customColorTheme
-  : customizationOptions.colorTheme === 'classic-red-gold' ? 'Classic red and gold color scheme, traditional festive colors' :
-    customizationOptions.colorTheme === 'elegant-subtle' ? 'Elegant and subtle color palette with soft tones, refined and gentle' :
-    customizationOptions.colorTheme === 'vibrant-rich' ? 'Vibrant and rich colors with high saturation, bold and energetic' :
-    customizationOptions.colorTheme === 'monochrome' ? 'Monochrome black and white or grayscale palette, sophisticated and timeless' :
-    customizationOptions.colorTheme === 'pastel-soft' ? 'Pastel soft color tones, gentle and dreamy' :
-    customizationOptions.colorTheme === 'deep-mysterious' ? 'Deep mysterious color tones, enigmatic and profound' :
-    customizationOptions.colorTheme === 'warm-earth' ? 'Warm earth tone color scheme, natural and cozy' :
-    customizationOptions.colorTheme === 'cool-blue' ? 'Cool blue tone color scheme, calm and serene' : customizationOptions.colorTheme}
+      ? customizationOptions.customColorTheme
+      : customizationOptions.colorTheme === 'classic-red-gold' ? 'Classic red and gold color scheme, traditional festive colors' :
+        customizationOptions.colorTheme === 'elegant-subtle' ? 'Elegant and subtle color palette with soft tones, refined and gentle' :
+          customizationOptions.colorTheme === 'vibrant-rich' ? 'Vibrant and rich colors with high saturation, bold and energetic' :
+            customizationOptions.colorTheme === 'monochrome' ? 'Monochrome black and white or grayscale palette, sophisticated and timeless' :
+              customizationOptions.colorTheme === 'pastel-soft' ? 'Pastel soft color tones, gentle and dreamy' :
+                customizationOptions.colorTheme === 'deep-mysterious' ? 'Deep mysterious color tones, enigmatic and profound' :
+                  customizationOptions.colorTheme === 'warm-earth' ? 'Warm earth tone color scheme, natural and cozy' :
+                    customizationOptions.colorTheme === 'cool-blue' ? 'Cool blue tone color scheme, calm and serene' : customizationOptions.colorTheme}
 - **Calligraphy Style**: ${customizationOptions.calligraphyStyle === 'custom' && customizationOptions.customCalligraphyStyle
-  ? customizationOptions.customCalligraphyStyle
-  : customizationOptions.calligraphyStyle === 'kaishu' ? 'Kaishu (Regular Script) - formal, upright, and clear strokes' :
-    customizationOptions.calligraphyStyle === 'xingshu' ? 'Xingshu (Running Script) - flowing, elegant, and dynamic strokes' :
-    customizationOptions.calligraphyStyle === 'caoshu' ? 'Caoshu (Cursive Script) - bold, expressive, and artistic strokes' :
-    customizationOptions.calligraphyStyle === 'lishu' ? 'Lishu (Clerical Script) - ancient, dignified, and structured strokes' :
-    customizationOptions.calligraphyStyle === 'zhuanshu' ? 'Zhuanshu (Seal Script) - ancient and elegant seal script style' :
-    customizationOptions.calligraphyStyle === 'weibei' ? 'Weibei - strong and powerful Wei stele style' : customizationOptions.calligraphyStyle}
+      ? customizationOptions.customCalligraphyStyle
+      : customizationOptions.calligraphyStyle === 'kaishu' ? 'Kaishu (Regular Script) - formal, upright, and clear strokes' :
+        customizationOptions.calligraphyStyle === 'xingshu' ? 'Xingshu (Running Script) - flowing, elegant, and dynamic strokes' :
+          customizationOptions.calligraphyStyle === 'caoshu' ? 'Caoshu (Cursive Script) - bold, expressive, and artistic strokes' :
+            customizationOptions.calligraphyStyle === 'lishu' ? 'Lishu (Clerical Script) - ancient, dignified, and structured strokes' :
+              customizationOptions.calligraphyStyle === 'zhuanshu' ? 'Zhuanshu (Seal Script) - ancient and elegant seal script style' :
+                customizationOptions.calligraphyStyle === 'weibei' ? 'Weibei - strong and powerful Wei stele style' : customizationOptions.calligraphyStyle}
 - **Decoration Level**: ${customizationOptions.decorationLevel === 'custom' && customizationOptions.customDecorationLevel
       ? customizationOptions.customDecorationLevel
       : customizationOptions.decorationLevel === 'minimal' ? 'Minimal decorative elements, focus primarily on calligraphy with subtle background patterns' :
         customizationOptions.decorationLevel === 'moderate' ? 'Balanced decorative elements and calligraphy, harmonious composition' :
-        customizationOptions.decorationLevel === 'rich' ? 'Rich decorative elements with intricate details, elaborate patterns, symbols, and motifs surrounding the calligraphy' :
-        customizationOptions.decorationLevel === 'extravagant' ? 'Extravagant decorative elements with extremely elaborate details and luxurious patterns' : customizationOptions.decorationLevel}${customizationOptions.customStyleDescription ? `\n- **Additional Style Description**: ${customizationOptions.customStyleDescription}\n\nIMPORTANT: The above additional style description should be incorporated into the overall design. Use it to refine and enhance the artwork while maintaining consistency with the other customization preferences.` : ''}
+          customizationOptions.decorationLevel === 'rich' ? 'Rich decorative elements with intricate details, elaborate patterns, symbols, and motifs surrounding the calligraphy' :
+            customizationOptions.decorationLevel === 'extravagant' ? 'Extravagant decorative elements with extremely elaborate details and luxurious patterns' : customizationOptions.decorationLevel}${customizationOptions.customStyleDescription ? `\n- **Additional Style Description**: ${customizationOptions.customStyleDescription}\n\nIMPORTANT: The above additional style description should be incorporated into the overall design. Use it to refine and enhance the artwork while maintaining consistency with the other customization preferences.` : ''}
 
 ---
 
@@ -296,36 +327,31 @@ Your generated "imagePrompt" must incorporate all customization preferences whil
 ---
 
 ### FINAL OUTPUT CONSTRAINTS:
-1. **Framing**:
-   - The entire diamond Doufang must be fully contained within the 1:1 frame.
-   - Minimal, elegant margins - just enough to prevent edge cropping (approximately 2-5% of frame width).
-   - The Doufang should fill most of the frame (90 - 95% of the image area).
-   - No cropping, no touching edges, no cut-off.
-2. **Text Quality**:
-   - Calligraphy must be clear, professional, and correctly written in the specified style.
-   - No distorted strokes, no typos.
-3. **No Modern Junk**:
-   - No UI elements, no watermarks, no photography credits, no signatures.
 
----
+1. **Framing** (fills 90-95% of frame):
+   - Entire diamond Doufang fully contained within 1:1 frame
+   - Minimal margins: 2-5% of frame width (prevents edge cropping)
+   - Clean background, symmetrical, print-ready
 
-Composition: 
-The diamond-shaped Doufang fills the majority of the 1:1 frame, centered with minimal elegant margins (just enough to prevent edge cropping, approximately 2-5% of frame width).
-The entire artwork is fully visible inside the frame, not touching any edge, not cropped, not cut off.
-The Doufang should occupy 90 - 95% of the image area, maximizing visual impact.
-Clean background, symmetrical, perfectly framed, suitable for printing and hanging on wall.
+2. **Calligraphy Quality** (CRITICAL - HIGHEST PRIORITY):
+   - **Layout**: 4 characters in balanced 2x2 grid at center
+   - **Brushwork**: Authentic traditional calligraphy with selected style:
+     - Natural ink flow with thick-to-thin stroke transitions
+     - Visible brush entry/exit points
+     - Organic ink bleeding on rice paper texture
+     - Dynamic strokes reflecting the chosen calligraphy style
+   - **Precision**: Each stroke anatomically correct, no malformed characters
+   - **Hierarchy**: Calligraphy at CENTER, decorative elements SURROUND it in corners and edges - both clearly visible
 
-Quality: ultra high detail, 8k, masterpiece, professional artwork, 1:1 aspect ratio.
+3. **MUST AVOID** (Negative Constraints):
+   - NO blurry, distorted, or malformed Chinese characters
+   - NO western typography or modern digital fonts
+   - NO cartoon/anime aesthetics
+   - NO watermarks, signatures, UI elements
+   - NO excessive white space or wide margins
+   - NO characters touching frame edges
 
-Framing requirements:
-- The entire diamond-shaped Doufang must be fully visible inside the image.
-- No part of the artwork is cut off, cropped, out of frame, or touching the image borders.
-- Minimal margins - the Doufang should fill most of the frame (90 - 95% of image area).
-
-Text requirements:
-- The Chinese characters must be clear, correct, readable.
-- No typo, no deformed text.
-- No modern elements, no western style, no watermark.
+Quality: Ultra high detail, 8K, masterpiece, professional museum-grade artwork.
 
 ---
 
@@ -346,18 +372,25 @@ export const getReferenceImageAnalysisPrompt = (
 ): string => {
   let prompt = `User input keyword: 「${userKeyword}」
 
-CRITICAL INSTRUCTION: A reference image has been provided above. You MUST analyze it and generate a prompt that REFERENCES and FOLLOWS the user's uploaded image closely: preserve its subject, style, composition, patterns, and visual identity; adapt them into the Doufang format (diamond shape, 2x2 calligraphy). Do not require a completely new or redesigned subject — the output should clearly follow the reference image.`;
-  
+CRITICAL INSTRUCTION: Multiple reference images have been provided above. You MUST analyze ALL of them and generate a prompt that SYNTHESIZES and COHESIVELY INTEGRATES elements from EACH image. 
+
+Your goal is to ensure the user feels that every image they uploaded contributed to the final result. For example:
+- **Image 1** might provide the primary subject shape.
+- **Image 2** might provide the background textures or secondary motifs.
+- **Style/Colors** should be a hybrid of all provided images.
+
+Do NOT ignore any image. Transform these diverse elements into a unified Doufang format (diamond shape, 2x2 calligraphy).`;
+
   if (customizationOptions) {
     const { customBlessingPhrase, artStyle, colorTheme, calligraphyStyle, decorationLevel } = customizationOptions;
-    
+
     if (customBlessingPhrase && customBlessingPhrase.trim()) {
       prompt += `\n\nUser-specified blessing phrase: 「${customBlessingPhrase.trim()}」`;
       prompt += `\n\nIMPORTANT: Use the keyword "${userKeyword}" to determine the visual theme and decorative elements (symbols, patterns, motifs). Use the custom blessing phrase "${customBlessingPhrase.trim()}" as the calligraphy text displayed on the Doufang.`;
     }
-    
+
     prompt += `\n\nCustomization preferences (apply these while maintaining reference image style):`;
-    
+
     // Handle custom values
     const artStyleDesc = artStyle === 'custom' && customizationOptions.customArtStyle
       ? customizationOptions.customArtStyle
@@ -371,71 +404,59 @@ CRITICAL INSTRUCTION: A reference image has been provided above. You MUST analyz
     const decorationLevelDesc = decorationLevel === 'custom' && customizationOptions.customDecorationLevel
       ? customizationOptions.customDecorationLevel
       : decorationLevel;
-    
+
     prompt += `\n- Art Style: ${artStyleDesc}`;
     prompt += `\n- Color Theme: ${colorThemeDesc}`;
     prompt += `\n- Calligraphy Style: ${calligraphyStyleDesc}`;
     prompt += `\n- Decoration Level: ${decorationLevelDesc}`;
-    
+
     if (customizationOptions.customStyleDescription && customizationOptions.customStyleDescription.trim()) {
       prompt += `\n- Additional Style Description: ${customizationOptions.customStyleDescription.trim()}`;
       prompt += `\n\nIMPORTANT: The above additional style description should be incorporated into the overall design. Use it to refine and enhance the artwork while maintaining consistency with the other customization preferences and the reference image style.`;
     }
   }
-  
+
   prompt += `
 
-STEP-BY-STEP ANALYSIS REQUIRED:
-1. FIRST, describe what you see in the reference image:
-   - What is the main subject or central figure? (e.g., samurai, warrior, character, object, etc.)
-   - What specific visual patterns, motifs, or decorative elements are present?
-   - What is the composition structure? How are elements arranged?
-   - What are the distinctive visual characteristics? (shapes, forms, graphic elements)
-   - What background elements or environmental details are visible?
+STEP-BY-STEP MULTI-IMAGE ANALYSIS REQUIRED:
+1. FIRST, analyze EACH reference image provided:
+   - What are the unique subjects, patterns, and motifs in Image 1?
+   - What are the unique subjects, patterns, and motifs in Image 2 (and 3, 4 if present)?
+   - Which elements are shared? Which are distinct?
 
-2. THEN, identify the artistic style:
-   - What is the artistic technique? (ink wash, brush painting, illustration style, etc.)
-   - What is the color palette? (specific colors, tones, contrast levels)
-   - What is the brushwork quality? (bold strokes, fine lines, texture, etc.)
-   - What is the visual mood? (dramatic, serene, energetic, etc.)
-   - What material/texture characteristics are visible?
+2. THEN, plan a SYNTHESIS:
+   - How will you combine the subjects? (e.g., Subject A interacting with Subject B's environment)
+   - How will you blend the artistic styles? (e.g., Subject A rendered in the brushwork style of Image 2)
+   - How will you merge the color palettes into a harmonious theme?
 
 3. FINALLY, generate a prompt that:
-   - DIRECTLY incorporates the main subject or key visual elements from the reference image
-   - PRESERVES the exact visual patterns, motifs, and decorative elements visible in the reference
-   - MAINTAINS the same artistic style, brushwork, and technique
-   - USES the same color palette and visual mood
-   - ADAPTS these elements to the diamond-shaped Doufang format while keeping the reference image's visual identity
-   - BLENDS the user's keyword (${userKeyword}) with the reference image's visual content
+   - EXPLICITLY mentions and utilizes key elements from ALL provided images.
+   - Creates a cohesive visual world where all reference elements coexist naturally.
+   - Adapts this synthesis to the diamond-shaped Doufang format.
+   - Ensures the influence of every user-uploaded image is "clearly visible".
 
-The generated prompt MUST explicitly describe:
-- The specific visual elements from the reference image to be included
-- How to recreate the reference image's patterns and motifs in the Doufang
-- The exact artistic style and technique to match the reference
-- The color palette and visual characteristics to preserve
+The generated prompt MUST explicitly describe how elements from the different images are blended together.`;
 
-DO NOT create generic descriptions. Be SPECIFIC about what you see in the reference image and how to recreate it.`;
-  
   return prompt;
 };
 
 // Simple user input prompt without reference image
 export const getSimpleUserInputPrompt = (
-  userKeyword: string, 
+  userKeyword: string,
   customizationOptions?: import('./types').CustomizationOptions
 ): string => {
   let prompt = `User input keyword: 「${userKeyword}」`;
-  
+
   if (customizationOptions) {
     const { customBlessingPhrase, artStyle, colorTheme, calligraphyStyle, decorationLevel } = customizationOptions;
-    
+
     if (customBlessingPhrase && customBlessingPhrase.trim()) {
       prompt += `\n\nUser-specified blessing phrase: 「${customBlessingPhrase.trim()}」`;
       prompt += `\n\nIMPORTANT: Use the keyword "${userKeyword}" to determine the visual theme and decorative elements (symbols, patterns, motifs). Use the custom blessing phrase "${customBlessingPhrase.trim()}" as the calligraphy text displayed on the Doufang.`;
     }
-    
+
     prompt += `\n\nCustomization preferences:`;
-    
+
     // Handle custom values
     const artStyleDesc = artStyle === 'custom' && customizationOptions.customArtStyle
       ? customizationOptions.customArtStyle
@@ -449,18 +470,18 @@ export const getSimpleUserInputPrompt = (
     const decorationLevelDesc = decorationLevel === 'custom' && customizationOptions.customDecorationLevel
       ? customizationOptions.customDecorationLevel
       : decorationLevel;
-    
+
     prompt += `\n- Art Style: ${artStyleDesc}`;
     prompt += `\n- Color Theme: ${colorThemeDesc}`;
     prompt += `\n- Calligraphy Style: ${calligraphyStyleDesc}`;
     prompt += `\n- Decoration Level: ${decorationLevelDesc}`;
-    
+
     if (customizationOptions.customStyleDescription && customizationOptions.customStyleDescription.trim()) {
       prompt += `\n- Additional Style Description: ${customizationOptions.customStyleDescription.trim()}`;
       prompt += `\n\nIMPORTANT: The above additional style description should be incorporated into the overall design. Use it to refine and enhance the artwork while maintaining consistency with the other customization preferences.`;
     }
   }
-  
+
   return prompt;
 };
 
@@ -470,5 +491,5 @@ export const getImageGenerationPromptWithReference = (basePrompt: string): strin
 
 IMPORTANT COMPOSITION NOTE: The diamond-shaped Doufang should fill 90 - 95% of the frame with minimal margins (2-5% of frame width). Avoid excessive white space or wide margins. Maximize the visual impact by making the Doufang artwork occupy most of the image area.
 
-Note: The reference image provided above should be used as a visual style guide. Follow the style, color palette, and artistic approach described in the prompt, which was generated based on analysis of this reference image.`;
+Note: Multiple reference images provided above should be used as a collective visual style guide. Follow the integrated style, synthesized color palette, and fused artistic approach described in the prompt, which was generated by carefully analyzing and combining all provided reference images. Ensure a harmonious fusion of all visual inputs.`;
 };

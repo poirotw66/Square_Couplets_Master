@@ -64,7 +64,7 @@ export interface GeminiContentPart {
 }
 
 // Error Types
-export type ApiErrorInput = 
+export type ApiErrorInput =
   | { status?: number; message?: string; code?: string }
   | Error
   | unknown;
@@ -90,4 +90,8 @@ export interface CustomizationOptions {
   customDecorationLevel?: string; // Custom decoration level description
   customBlessingPhrase?: string; // Optional: user can provide their own 4-character phrase
   customStyleDescription?: string; // Optional: user can provide a general style description
+  referenceImageMode?: ReferenceImageMode; // Optional: how to use the reference image
 }
+
+// Reference Image Mode Types
+export type ReferenceImageMode = 'preserve' | 'reimagine';

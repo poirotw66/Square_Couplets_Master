@@ -39,7 +39,7 @@ function OptionGroupComponent<T extends string>({
       <label className="block text-amber-200/80 text-sm font-bold mb-3" id={`${title}-label`}>
         {title}
       </label>
-      <div 
+      <div
         className={`grid ${gridClass} gap-3 mb-3`}
         role="radiogroup"
         aria-labelledby={`${title}-label`}
@@ -67,7 +67,7 @@ function OptionGroupComponent<T extends string>({
               <div className="text-xs text-amber-500/60">{option.description}</div>
             </div>
             {selectedValue === option.value && (
-              <div 
+              <div
                 className="absolute top-2 right-2 w-2 h-2 bg-amber-400 rounded-full"
                 aria-hidden="true"
               ></div>
@@ -100,6 +100,9 @@ function OptionGroupComponent<T extends string>({
   );
 }
 
-export const OptionGroup = memo(OptionGroupComponent) as <T extends string>(props: OptionGroupProps<T>) => JSX.Element;
+// Use Function to allow generic component with memo
+export const OptionGroup = memo(OptionGroupComponent) as <T extends string>(
+  props: OptionGroupProps<T>
+) => React.ReactNode;
 
-OptionGroup.displayName = 'OptionGroup';
+(OptionGroup as any).displayName = 'OptionGroup';
