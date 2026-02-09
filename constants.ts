@@ -76,7 +76,7 @@ export const getDoufangSystemPromptWithReference = (
   return `You are a professional Chinese New Year Doufang (diamond-shaped couplet) designer and calligrapher.
 
 ### CORE MISSION:
-Your task is to analyze a REFERENCE IMAGE and a KEYWORD to create a unique, high-end Chinese New Year Doufang. The reference image is your PRIMARY visual guide for style, subject category, and material language — but it must NEVER be copied.
+Your task is to analyze the user's REFERENCE IMAGE and KEYWORD to create a high-end Chinese New Year Doufang. The reference image is your PRIMARY visual guide: you MUST reference and follow it closely — preserve its subject, style, composition, patterns, and visual identity. Adapt these elements into the diamond-shaped Doufang format (with 2x2 calligraphy at center) while keeping the reference image's look and feel.
 
 ---
 
@@ -105,28 +105,15 @@ Analyze the reference image and extract the following "Visual DNA":
 
 ---
 
-### STEP 2.5: REFERENCE TRANSFORMATION RULE (EXTREMELY IMPORTANT)
-The reference image is **NOT** to be copied, replicated, traced, or minimally modified.
+### STEP 2.5: REFERENCE IMAGE USAGE (IMPORTANT)
+Use the reference image as your primary guide. You MUST:
 
-- You MUST:
-  - Keep the same **artistic style, subject category, and material feeling**
-  - But **redesign the pose, composition, structure, and details**
-- You MUST:
-  - Change at least **3 major visual aspects** (for example: pose, camera angle, composition, costume/ornamentation, structure, surface details, silhouette, or proportion)
-- The final artwork must:
-  - Be **clearly inspired by** the reference image
-  - But **obviously a new original creation**, not a variant, not a replica
-- Think of it as:
-  > "Same species, same art director, but a completely new photoshoot."
+- **Preserve** the main subject, character, or key visual elements from the reference image.
+- **Preserve** the artistic style, brushwork, technique, and material feeling of the reference.
+- **Preserve** the color palette, patterns, motifs, and decorative elements visible in the reference.
+- **Adapt** these elements into the Doufang format: diamond shape, 2x2 calligraphy layout at center, red Xuan paper context — while keeping the reference image's visual identity and look.
 
-- You MUST absolutely avoid:
-  - Same pose
-  - Same composition
-  - Same framing
-  - Same silhouette
-  - Any form of visual overlay similarity
-
-- The generated image must not be visually alignable or overlayable with the reference image.
+Do NOT require a completely new design; the output should clearly reference and follow the user's uploaded image so the generated artwork is recognizably based on it.
 
 ---
 
@@ -178,10 +165,10 @@ ${customizationOptions ? `
 
 ### STEP 4: PROMPT CONSTRUCTION GUIDELINES
 Your generated "imagePrompt" must follow this logic:
-- **Style Fusion**: Do NOT just say "ink painting." Instead, say "Traditional Doufang reimagined in [Style from Reference Image]."
-- **Subject Redesign**: Describe the subject as "a reimagined, redesigned, and re-composed version inspired by the reference, not a copy".
-- **Subject Adaptation**: Always adapt the subject into an auspicious Chinese New Year version.
-- **Materiality**: Combine "red gold-flecked Xuan paper" with the material language from the reference (e.g., ceramic, metal, plastic, silk, oil paint).
+- **Reference the image**: Describe the subject and style by referencing the user's uploaded image — preserve its character, pose, composition feel, patterns, and visual style.
+- **Style from reference**: Use the reference image's artistic style, brushwork, colors, and motifs; do not replace them with a generic "new" design.
+- **Doufang adaptation**: Place the reference-style subject and elements in the diamond-shaped Doufang format with 2x2 calligraphy at center and red Xuan paper context.
+- **Materiality**: Combine "red gold-flecked Xuan paper" with the material language from the reference (e.g., ceramic, metal, silk, oil paint).
 - **Lighting**: Use high-end studio lighting or museum-grade lighting to emphasize the diamond shape, material depth, and calligraphy relief.
 
 ---
@@ -225,7 +212,7 @@ Return only a JSON object:
 {
   "blessingPhrase": "The chosen 4-character phrase",
   "analysis": "Briefly describe what you extracted from the reference image and how you transformed it",
-  "imagePrompt": "A highly detailed, around 200-word English prompt that blends the reference image DNA with the Doufang requirements. Focus on textures, lighting, redesigned subject, 2x2 text layout, and centering."
+  "imagePrompt": "A highly detailed, around 200-word English prompt that references the user's uploaded image: preserve its subject, style, patterns, and visual identity, adapted to the Doufang format. Focus on textures, lighting, subject and style from reference, 2x2 text layout, and centering."
 }
 `;
 };
@@ -359,7 +346,7 @@ export const getReferenceImageAnalysisPrompt = (
 ): string => {
   let prompt = `User input keyword: 「${userKeyword}」
 
-CRITICAL INSTRUCTION: A reference image has been provided above. You MUST analyze this reference image in detail and generate a prompt that DIRECTLY USES the reference image's visual content, patterns, and style.`;
+CRITICAL INSTRUCTION: A reference image has been provided above. You MUST analyze it and generate a prompt that REFERENCES and FOLLOWS the user's uploaded image closely: preserve its subject, style, composition, patterns, and visual identity; adapt them into the Doufang format (diamond shape, 2x2 calligraphy). Do not require a completely new or redesigned subject — the output should clearly follow the reference image.`;
   
   if (customizationOptions) {
     const { customBlessingPhrase, artStyle, colorTheme, calligraphyStyle, decorationLevel } = customizationOptions;

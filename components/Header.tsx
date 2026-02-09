@@ -50,7 +50,7 @@ export const Header: React.FC<HeaderProps> = memo(({ onOpenSettings }) => {
 
       <div className="inline-flex items-center gap-2 border-2 border-amber-500/40 px-6 py-2 rounded-full mb-8 bg-gradient-to-r from-red-950/60 via-red-900/60 to-red-950/60 backdrop-blur-md shadow-2xl transition-transform hover:scale-105 duration-500 gold-pulse">
         <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-[0_0_8px_rgba(251,191,36,0.8)]"></div>
-        <span className="text-amber-200 text-xs tracking-[0.3em] font-bold uppercase">Chinese New Year 2025</span>
+        <span className="text-amber-200 text-xs tracking-[0.3em] font-bold uppercase">Chinese New Year 2026</span>
         <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-[0_0_8px_rgba(251,191,36,0.8)]"></div>
       </div>
       
